@@ -203,7 +203,7 @@ public class GUI
                             filesManager.reportConnecting(IP, parser);
                             launcher.connectTo(path, IP);
                             System.exit(0);
-                        } 
+                        }
                         catch (Exception e2) 
                         {
                             e2.printStackTrace();

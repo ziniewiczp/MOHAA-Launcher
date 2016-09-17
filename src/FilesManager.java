@@ -20,7 +20,7 @@ public class FilesManager
        {
            Scanner scanner = new Scanner(Paths.get("config.txt"));
            
-           String path = scanner.next();
+           String path = scanner.nextLine();
            scanner.close();
            
            if( path.matches("([a-zA-Z]:)?(\\\\[a-zA-Z0-9_.-]+)+\\\\?") )
