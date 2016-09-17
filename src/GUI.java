@@ -98,7 +98,7 @@ public class GUI
         {
             super(new GridBagLayout());
                         
-            RecentServersManager recentServersManager = new RecentServersManager();
+            FilesManager filesManager = new FilesManager();
             Launcher launcher = new Launcher();
             
             GridBagConstraints gbc = new GridBagConstraints();
@@ -200,7 +200,7 @@ public class GUI
                         
                         try 
                         {
-                            recentServersManager.reportConnecting(IP, parser);
+                            filesManager.reportConnecting(IP, parser);
                             launcher.connectTo(path, IP);
                             System.exit(0);
                         } 
@@ -437,7 +437,7 @@ public class GUI
                         
                         try 
                         {
-                            recentServersManager.reportConnecting(IP, parser);
+                            filesManager.reportConnecting(IP, parser);
                             launcher.connectTo(path, IP);
                             System.exit(0);
                         } 
@@ -662,7 +662,7 @@ public class GUI
     
     
     public static void createAndShowGUI(Parser parser, String path) 
-    {
+    {       
         //Create and set up the window.
         JFrame frame = new JFrame("Medal of Honor: Allied Assault Launcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
