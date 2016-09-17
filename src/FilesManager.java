@@ -23,11 +23,7 @@ public class FilesManager
            String path = scanner.nextLine();
            scanner.close();
            
-           if( path.matches("([a-zA-Z]:)?(\\\\[a-zA-Z0-9_.-]+)+\\\\?") )
-               return path;
-           
-           else
-               return null;
+           return path;
        }       
     }
     
