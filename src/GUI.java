@@ -288,6 +288,12 @@ public class GUI
             
             JScrollPane playersScrollPanel = new JScrollPane(playersPanel);
             
+            // set to avoid resizing playersScrollPanel
+            playersScrollPanel.setPreferredSize(new Dimension(200,250));
+            
+            // "speeding up" scrolling inside playersScrollPanel
+            playersScrollPanel.getVerticalScrollBar().setUnitIncrement(14);
+            
             rightPanel.add(playersScrollPanel, gbc);
             
             // listener used to display selected server's information in the rightPanel
