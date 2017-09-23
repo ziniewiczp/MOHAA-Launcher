@@ -26,7 +26,7 @@ public class Parser
     {
         this.serverArray = new String[50][5];
         
-        // checking if there are recenttly visited serevers found.
+        // checking if there are recently visited servers found.
         if( this.recentServersMap.size() > 0 )
         {
             recentServersFound = true;
@@ -44,7 +44,12 @@ public class Parser
         else
         {
             recentServersFound = false;
-            this.recentServerArray = null;
+            this.recentServerArray = new String[1][5];
+
+            for( int i = 0; i < 5; i++)
+            {
+                this.recentServerArray[0][i] = "";
+            }
         }
         
         // creating JSoup document
@@ -55,7 +60,7 @@ public class Parser
         // used to fill serverArray
         int i = 0;
         
-        for (Element table : doc.select("table[class=table_lst table_lst_srs"))
+        for (Element table : doc.select("table[class=table_lst table_lst_srs]"))
         {
             for (Element row : table.select("tr"))
             {
@@ -99,7 +104,7 @@ public class Parser
                 .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36")
                 .get();
         
-        for (Element table : doc.select("table[class=table_lst table_lst_stp"))
+        for (Element table : doc.select("table[class=table_lst table_lst_stp]"))
         {
             for (Element row : table.select("tr"))
             {
