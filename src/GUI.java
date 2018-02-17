@@ -390,6 +390,8 @@ public class GUI
             textLabel.setLabelFor(filterText);
             textPanel.add(filterText);
             bottomPanel.add(textPanel, BorderLayout.WEST);
+
+            JButton launchGameButton = new JButton("Launch game");
             
             JButton refreshButton = new JButton("Refresh");
             
@@ -397,6 +399,19 @@ public class GUI
             
             JLabel copyright = new JLabel("<html><center>Copyright \u00a9 2016 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
+
+            launchGameButton.addActionListener((new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        launcher.launchGame(path);
+                        System.exit(0);
+
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }));
             
             // listener used to refresh current table
             refreshButton.addActionListener(new ActionListener()
@@ -451,6 +466,7 @@ public class GUI
                         
             // additional panel, used to align both buttons to the EAST
             JPanel buttonPanel = new JPanel();
+            buttonPanel.add(launchGameButton);
             buttonPanel.add(refreshButton);
             buttonPanel.add(connectButton);
             
