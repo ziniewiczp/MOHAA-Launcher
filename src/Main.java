@@ -1,6 +1,3 @@
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 
@@ -10,36 +7,20 @@ public class Main {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    Parser.initParser();
 
-                    if(Parser.path == null) {
-                        JOptionPane.showMessageDialog(new JFrame(),
-                                "Medal of Honor: Allied Assault folder not found. Please choose directory "
-                                        + "in which game is installed.");
+                Parser.initParser();
 
-                        JFileChooser fileChooser = new JFileChooser();
+                if(Parser.path == null) {
+                    NotificationManager.displayMessageDialog("Medal of Honor: Allied Assault folder not found." +
+                            "Please choose directory in which game is installed.");
 
-                        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                        int returnValue = fileChooser.showOpenDialog(new JFrame());
-
-                        if (returnValue == JFileChooser.APPROVE_OPTION) {
-                            Parser.path = fileChooser.getSelectedFile().getAbsolutePath();
-
-                            FilesManager.initConfigFileWithPath(Parser.path);
-
-                            Parser.parseOnlineServers();
-                            GUI.createAndShowGUI();
-                        } else {
-                            System.exit(0);
-                        }
-                    } else {
-                        Parser.parseOnlineServers();
-                        GUI.createAndShowGUI();
+                    if (!FileChoosingManager.chooseGameDirectory()) {
+                        System.exit(0);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+
+                Parser.parseOnlineServers();
+                GUI.createAndShowGUI();
             }
         });
     }

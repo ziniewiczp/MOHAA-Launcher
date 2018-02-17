@@ -17,6 +17,10 @@ class FilesManager {
     static String getPathFromConfigFile() {
        try(Scanner scanner = new Scanner(Paths.get("config.txt"))) {
            String path = scanner.nextLine();
+
+           if(path.equals(""))
+               return null;
+
            return path;
 
        } catch (IOException ex) {
