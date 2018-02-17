@@ -1,36 +1,33 @@
 import java.io.File;
 import java.io.IOException;
 
-public class Launcher
-{
-    public void connectTo(String path, String IP)
-    {
-        try
-        {
+class Launcher {
+
+    static void connectTo(String IP) {
+        try {
             @SuppressWarnings("unused")
-            Process process = Runtime.getRuntime().exec(path + "\\MOHAA.exe"
+            Process process = Runtime.getRuntime().exec(Parser.path + "\\MOHAA.exe"
                     + " set cl_playintro 0 +connect " + IP,
                     null,
-                    new File(path));
-        }
-        catch(IOException e)
-        {
+                    new File(Parser.path));
+
+        } catch(IOException e) {
             e.printStackTrace();
+
+            // TODO: display information that MOHAA.exe was not found and delete path from config file
         }
     }
     
-    public static void launchGame(String path)
-    {
-        try
-        {
+    static void launchGame() {
+        try {
             @SuppressWarnings("unused")
-            Process process = Runtime.getRuntime().exec(path + "\\MOHAA.exe +set cl_playintro 0", 
+            Process process = Runtime.getRuntime().exec(Parser.path + "\\MOHAA.exe +set cl_playintro 0",
                     null, 
-                    new File(path));
-        }
-        catch(IOException e)
-        {
+                    new File(Parser.path));
+        } catch(IOException e) {
             e.printStackTrace();
+
+            // TODO: display information that MOHAA.exe was not found and delete path from config file
         }
     }
 }

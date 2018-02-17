@@ -4,52 +4,40 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 
-public class Main
-{
-    public static void main(String[] args) throws Exception
-    {    
-        Parser parser = new Parser();
-        FilesManager configManager = new FilesManager();
-        JFileChooser fileChooser = new JFileChooser();
-        
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                try
-                {
-                    String path = configManager.getPath();
-                    
-                    // checking if server path was found in config file
-                    if(  path == null )
-                    {
+public class Main {
+
+    public static void main(String[] args) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    Parser.initParser();
+
+                    if(Parser.path == null) {
                         JOptionPane.showMessageDialog(new JFrame(),
                                 "Medal of Honor: Allied Assault folder not found. Please choose directory "
-                                + "in which game is installed.");
-                        
+                                        + "in which game is installed.");
+
+                        JFileChooser fileChooser = new JFileChooser();
+
                         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                         int returnValue = fileChooser.showOpenDialog(new JFrame());
-                        
-                        if( returnValue == JFileChooser.APPROVE_OPTION )
-                        {
-                            path = fileChooser.getSelectedFile().getAbsolutePath();
-                            
-                            configManager.initConfigFile(path);
-                            
-                            parser.parseOnlineServers();
-                            GUI.createAndShowGUI(parser, path);
-                        }
-                        else
+
+                        if (returnValue == JFileChooser.APPROVE_OPTION) {
+                            Parser.path = fileChooser.getSelectedFile().getAbsolutePath();
+
+                            FilesManager.initConfigFileWithPath(Parser.path);
+
+                            Parser.parseOnlineServers();
+                            GUI.createAndShowGUI();
+                        } else {
                             System.exit(0);
+                        }
+                    } else {
+                        Parser.parseOnlineServers();
+                        GUI.createAndShowGUI();
                     }
-                    else
-                    {
-                        parser.parseOnlineServers();
-                        GUI.createAndShowGUI(parser, path);
-                    }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

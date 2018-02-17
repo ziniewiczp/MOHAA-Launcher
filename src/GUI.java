@@ -94,12 +94,9 @@ public class GUI
              }
          };
 
-        public MainFrame(Parser parser, String path)
+        public MainFrame(String path)
         {
             super(new GridBagLayout());
-                        
-            FilesManager filesManager = new FilesManager();
-            Launcher launcher = new Launcher();
             
             GridBagConstraints gbc = new GridBagConstraints();
             Border eBorder = BorderFactory.createEtchedBorder();
@@ -123,7 +120,7 @@ public class GUI
             gbc.weightx = 80;
             gbc.weighty = 98;
             
-            CustomTableModel onlineModel = new CustomTableModel(parser.serverArray, 50);
+            CustomTableModel onlineModel = new CustomTableModel(Parser.serversArray, 50);
             onlineServersTable = new JTable(onlineModel);
             onlineServersTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
             onlineServersTable.setFillsViewportHeight(true);
@@ -132,7 +129,7 @@ public class GUI
             tabbedPane.addTab("Server list", null, serverList, null);
             tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
             
-            CustomTableModel recentModel = new CustomTableModel(parser.recentServerArray, parser.recentServerArray.length);
+            CustomTableModel recentModel = new CustomTableModel(Parser.recentServersArray, Parser.recentServersArray.length);
             recentServersTable = new JTable(recentModel);
             recentServersTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
             recentServersTable.setFillsViewportHeight(true);
@@ -194,14 +191,14 @@ public class GUI
                     {
                         String IP;
                         if( MainFrame.currentTab == 0)
-                            IP = parser.serverArray[row][3];
+                            IP = Parser.serversArray[row][3];
                         else
-                            IP = parser.recentServerArray[row][3];
+                            IP = Parser.recentServersArray[row][3];
                         
                         try 
                         {
-                            filesManager.reportConnecting(IP, parser);
-                            launcher.connectTo(path, IP);
+                            Parser.updateRecentServersList(IP);
+                            Launcher.connectTo(IP);
                             System.exit(0);
                         }
                         catch (Exception e2) 
@@ -308,7 +305,7 @@ public class GUI
                         
                         try
                         {
-                            playersLabel.setText(parser.parseServerInfo((String)onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3)));
+                            playersLabel.setText(Parser.parseServerInfo((String)onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3)));
                         } 
                         catch (Exception e) 
                         {
@@ -329,7 +326,7 @@ public class GUI
                         
                         try
                         {
-                            playersLabel.setText(parser.parseServerInfo((String)recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 3)));    
+                            playersLabel.setText(Parser.parseServerInfo((String)recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 3)));
                         } 
                         catch (Exception e) 
                         {
@@ -404,7 +401,7 @@ public class GUI
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        launcher.launchGame(path);
+                        Launcher.launchGame();
                         System.exit(0);
 
                     } catch (Exception e1) {
@@ -423,12 +420,12 @@ public class GUI
                     if( MainFrame.currentTab == 0)
                     {
                         model = (CustomTableModel) onlineServersTable.getModel();
-                        model.refresh(parser, 0);
+                        model.refresh(0);
                     }
                     else
                     {
                         model = (CustomTableModel) recentServersTable.getModel();
-                        model.refresh(parser, 1);
+                        model.refresh(1);
                     }
                         
                 }
@@ -446,14 +443,14 @@ public class GUI
                             (recentServersTable.getSelectedRow() != -1) && MainFrame.currentTab == 1)
                     {
                         if( MainFrame.currentTab == 0)
-                            IP = parser.serverArray[onlineServersTable.getSelectedRow()][3];
+                            IP = Parser.serversArray[onlineServersTable.getSelectedRow()][3];
                         else
-                            IP = parser.recentServerArray[recentServersTable.getSelectedRow()][3];
+                            IP = Parser.recentServersArray[recentServersTable.getSelectedRow()][3];
                         
                         try 
                         {
-                            filesManager.reportConnecting(IP, parser);
-                            launcher.connectTo(path, IP);
+                            Parser.updateRecentServersList(IP);
+                            Launcher.connectTo(IP);
                             System.exit(0);
                         } 
                         catch (Exception e1) 
@@ -507,7 +504,9 @@ public class GUI
         private void setImage(Object map)
         {   
             String localMap = (String) map;
-            
+
+            // TODO: create mapping mapApiName -> image to simplify this switch
+
             try
             {
                 switch( localMap.toLowerCase() )
@@ -623,15 +622,15 @@ public class GUI
             return columnNames[col];
         }
 
-        public void refresh(Parser parser, int whichTable)
+        void refresh(int whichTable)
         { 
             try 
             {
-                parser.parseOnlineServers();
+                Parser.parseOnlineServers();
                 if( whichTable == 0)
-                    this.serversArray = parser.serverArray;
+                    this.serversArray = Parser.serversArray;
                 else
-                    this.serversArray = parser.recentServerArray;
+                    this.serversArray = Parser.recentServersArray;
                 fireTableDataChanged();
             } 
             catch (Exception e) 
@@ -677,7 +676,7 @@ public class GUI
     }
     
     
-    public static void createAndShowGUI(Parser parser, String path) 
+    static void createAndShowGUI()
     {       
         //Create and set up the window.
         JFrame frame = new JFrame("Medal of Honor: Allied Assault Launcher");
@@ -687,7 +686,7 @@ public class GUI
         frame.setIconImage(icon.getImage());
         
         //Add content to the window.
-        frame.add(new MainFrame(parser, path), BorderLayout.CENTER);
+        frame.add(new MainFrame(Parser.path), BorderLayout.CENTER);
         
         //Display the window.
         frame.pack();

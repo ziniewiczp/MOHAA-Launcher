@@ -1,8 +1,6 @@
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,114 +8,113 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 
-public class Parser
-{
-    boolean recentServersFound;
-    public String[][] serverArray;
-    public String[][] recentServerArray;
-    Map<String, Integer> recentServersMap;
+class Parser {
+    static String path;
+    static String[][] serversArray;
+    static String[][] recentServersArray;
+    static List<String> recentServersList;
     
-    public Parser() throws Exception {
-        this.recentServersMap = FilesManager.createRecentServersMap();
+    static void initParser() {
+        recentServersList = FilesManager.createRecentServersListFromFile();
+        path = FilesManager.getPathFromConfigFile();
     }
     
-    public void parseOnlineServers() throws Exception
-    {
-        this.serverArray = new String[50][5];
-        
-        // checking if there are recently visited servers found.
-        if( this.recentServersMap.size() > 0 )
-        {
-            recentServersFound = true;
-            
-            this.recentServerArray = new String[this.recentServersMap.size()][5];
-            
-            for( int i = 0; i < this.recentServersMap.size(); i++)
-            {
-                for( int j = 0; j < 5; j++)
-                {
-                    this.recentServerArray[i][j] = "";
-                }
-            }
-        }
-        else
-        {
-            recentServersFound = false;
-            this.recentServerArray = new String[1][5];
+    static void parseOnlineServers() {
+        boolean recentServersFound;
+        serversArray = new String[50][5];
 
-            for( int i = 0; i < 5; i++)
-            {
-                this.recentServerArray[0][i] = "";
-            }
+        if( recentServersList.size() > 0 ) {
+            recentServersFound = true;
+            recentServersArray = new String[recentServersList.size()][5];
+        } else {
+            recentServersFound = false;
+            recentServersArray = new String[1][5];
         }
-        
-        // creating JSoup document
-        Document doc = Jsoup.connect("http://www.gametracker.com/search/mohaa/?sort=3&order=DESC&searchipp=50#search")
-                .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36")
-                .get();
-        
-        // used to fill serverArray
-        int i = 0;
-        
-        for (Element table : doc.select("table[class=table_lst table_lst_srs]"))
-        {
-            for (Element row : table.select("tr"))
-            {
-                Elements tds = row.select("td");
-                
-                // ignoring headers
-                if( tds.get(2).text().equals("Server Name")) continue;
-                
-                serverArray[i][0] = tds.get(2).text();  // server name
-                serverArray[i][1] = tds.get(3).text();  // players count
-                
-                // substring used to cut out "GB" from "/search/mohaa/GB/"
-                serverArray[i][2] = tds.get(5).select("a[href]").attr("href").substring(14,  16);   // localization
-                serverArray[i][3] = tds.get(6).text();  // IP address
-                serverArray[i][4] = tds.get(7).text();  // map
-                
-                if( recentServersFound && recentServersMap.containsKey(tds.get(6).text()) )
-                {
-                    Integer currentServerNumber = recentServersMap.get(tds.get(6).text());
-                    
-                    recentServerArray[currentServerNumber - 1][0] = tds.get(2).text();  // server name
-                    recentServerArray[currentServerNumber - 1][1] = tds.get(3).text();  // players count
-                
-                    // substring used to cut out "GB" from "/search/mohaa/GB/"
-                    recentServerArray[currentServerNumber - 1][2] = tds.get(5).select("a[href]").attr("href").substring(14,  16);   // localization
-                    recentServerArray[currentServerNumber - 1][3] = tds.get(6).text();  // IP address
-                    recentServerArray[currentServerNumber - 1][4] = tds.get(7).text();  // map
+
+        for( String[] row : recentServersArray)
+            Arrays.fill(row, "");
+
+        try {
+            // creating JSoup document
+            Document doc = Jsoup.connect("http://www.gametracker.com/search/mohaa/?sort=3&order=DESC&searchipp=50#search")
+                    .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36")
+                    .get();
+
+            int rowCounter = 0;
+
+            for (Element table : doc.select("table[class=table_lst table_lst_srs]")) {
+                for (Element row : table.select("tr")) {
+
+                    Elements td = row.select("td");
+
+                    // ignore headers
+                    if( td.get(2).text().equals("Server Name")) continue;
+
+                    populateRow(serversArray, rowCounter, td);
+
+                    if( recentServersFound && recentServersList.contains(td.get(6).text()) ) {
+                        int currentServerNumber = recentServersList.indexOf(td.get(6).text());
+
+                        populateRow(recentServersArray, currentServerNumber, td);
+                    }
+
+                    rowCounter++;
                 }
-                  
-                i++;
             }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+
+            // TODO: display information that gametracker is not responding
         }
     }
     
-    public String parseServerInfo(String IP) throws Exception
-    {
+    static String parseServerInfo(String IP) {
         String serverInfo = "<html><b>Players online:</b><br/><ol>";
-        
-        // creating JSoup document
-        Document doc = Jsoup.connect("http://www.gametracker.com/server_info/" + IP + "/")
-                .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36")
-                .get();
-        
-        for (Element table : doc.select("table[class=table_lst table_lst_stp]"))
-        {
-            for (Element row : table.select("tr"))
-            {
-                Elements tds = row.select("td");
-                
-                // ignoring headers
-                if( tds.get(1).text().equals("Name")) continue;
-                
-                serverInfo = serverInfo + "<li>" + tds.get(1).text() + "</li>";  
+
+        try {
+            // creating JSoup document
+            Document doc = Jsoup.connect("http://www.gametracker.com/server_info/" + IP + "/")
+                    .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36")
+                    .get();
+
+            for (Element table : doc.select("table[class=table_lst table_lst_stp]")) {
+                for (Element row : table.select("tr")) {
+
+                    Elements td = row.select("td");
+
+                    // ignore headers
+                    if (td.get(1).text().equals("Name")) continue;
+
+                    serverInfo = serverInfo + "<li>" + td.get(1).text() + "</li>";
+                }
             }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+
+            // TODO: display information that gametracker is not responding
         }
         
-        serverInfo = serverInfo + "</ol></html>";
-        
-        return serverInfo;
+        return serverInfo + "</ol></html>";
+    }
+
+    static void updateRecentServersList(String givenIP) {
+        if(!recentServersList.isEmpty()) {
+            if(recentServersList.contains(givenIP)) {
+                recentServersList.remove(givenIP);
+            }
+        }
+
+        recentServersList.add(0, givenIP);
+
+        FilesManager.updateRecentServersFile();
+    }
+
+    private static void populateRow(String[][] array, int rowNumber, Elements td) {
+        array[rowNumber][0] = td.get(2).text();  // server name
+        array[rowNumber][1] = td.get(3).text();  // players count
+        // substring used to cut out "GB" from "/search/mohaa/GB/"
+        array[rowNumber][2] = td.get(5).select("a[href]").attr("href").substring(14,  16);   // localization
+        array[rowNumber][3] = td.get(6).text();  // IP address
+        array[rowNumber][4] = td.get(7).text();  // map
     }
 }
