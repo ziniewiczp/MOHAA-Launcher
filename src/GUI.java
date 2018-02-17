@@ -100,7 +100,6 @@ public class GUI
                         
             FilesManager filesManager = new FilesManager();
             Launcher launcher = new Launcher();
-            RecentServersManager recentServersManager = new RecentServersManager();
             
             GridBagConstraints gbc = new GridBagConstraints();
             Border eBorder = BorderFactory.createEtchedBorder();
@@ -201,7 +200,7 @@ public class GUI
                         
                         try 
                         {
-                            recentServersManager.reportConnecting(IP, parser);
+                            filesManager.reportConnecting(IP, parser);
                             launcher.connectTo(path, IP);
                             System.exit(0);
                         }
@@ -453,7 +452,7 @@ public class GUI
                         
                         try 
                         {
-                            recentServersManager.reportConnecting(IP, parser);
+                            filesManager.reportConnecting(IP, parser);
                             launcher.connectTo(path, IP);
                             System.exit(0);
                         } 
