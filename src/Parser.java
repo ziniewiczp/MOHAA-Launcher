@@ -7,7 +7,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-
 class Parser {
     static String path;
     static String[][] serversArray;
@@ -48,7 +47,8 @@ class Parser {
                     Elements td = row.select("td");
 
                     // ignore headers
-                    if( td.get(2).text().equals("Server Name")) continue;
+                    if( td.get(2).text().equals("Server Name"))
+                        continue;
 
                     populateRow(serversArray, rowCounter, td);
 
@@ -64,7 +64,15 @@ class Parser {
         } catch (IOException ex) {
             ex.printStackTrace();
 
-            // TODO: display information that gametracker is not responding
+            boolean choice = NotificationManager.displayErrorYesNoOptionDialog("GameTracker.com is not responding, " +
+                    "MOHAA Launcher will now close. Do you want to launch the game?", "Connection error");
+
+            if(choice) {
+                Launcher.launchGame();
+                System.exit(0);
+            } else {
+                System.exit(0);
+            }
         }
     }
     
@@ -83,7 +91,8 @@ class Parser {
                     Elements td = row.select("td");
 
                     // ignore headers
-                    if (td.get(1).text().equals("Name")) continue;
+                    if (td.get(1).text().equals("Name"))
+                        continue;
 
                     serverInfo = serverInfo + "<li>" + td.get(1).text() + "</li>";
                 }
@@ -91,7 +100,15 @@ class Parser {
         } catch (IOException ex) {
             ex.printStackTrace();
 
-            // TODO: display information that gametracker is not responding
+            boolean choice = NotificationManager.displayErrorYesNoOptionDialog("GameTracker.com is not responding, " +
+                    "MOHAA Launcher will now close. Do you want to launch the game?", "Connection error");
+
+            if(choice) {
+                Launcher.launchGame();
+                System.exit(0);
+            } else {
+                System.exit(0);
+            }
         }
         
         return serverInfo + "</ol></html>";
