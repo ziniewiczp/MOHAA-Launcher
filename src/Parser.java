@@ -17,9 +17,8 @@ public class Parser
     public String[][] recentServerArray;
     Map<String, Integer> recentServersMap;
     
-    public Parser() throws Exception
-    {
-        createRecentServersMap();
+    public Parser() throws Exception {
+        this.recentServersMap = FilesManager.createRecentServersMap();
     }
     
     public void parseOnlineServers() throws Exception
@@ -120,24 +119,5 @@ public class Parser
         serverInfo = serverInfo + "</ol></html>";
         
         return serverInfo;
-    }
-    
-    public void createRecentServersMap() throws Exception
-    {
-        this.recentServersMap = new HashMap<String, Integer>();
-        
-        // checking if file with recent IP's exists and if it isn't empty
-        File f = new File("recentServers.txt");
-        if( f.isFile() && f.length() != 0 )
-        {
-            Scanner file = new Scanner(Paths.get("recentServers.txt"));
-            
-            while( file.hasNext() )
-            {
-                this.recentServersMap.put(file.next(), Integer.parseInt(file.next()));
-            }
-            
-            file.close();
-        }
     }
 }
