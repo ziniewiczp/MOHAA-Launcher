@@ -13,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -52,6 +54,7 @@ class GUI {
         private JLabel playersLabel;
         private JLabel imageLabel;
         private BufferedImage img;
+        private Map<String, String> mapNames;
 
         // row filter used to skip rows, which are empty
         private RowFilter<CustomTableModel, Integer> emptyFilter = new RowFilter<CustomTableModel, Integer>() {
@@ -223,6 +226,8 @@ class GUI {
 
             JPanel imagePanel = new JPanel(new BorderLayout());
 
+            initMapNames();
+
             try {
                 img = ImageIO.read(new File("images/default.jpg"));
                 ImageIcon icon = new ImageIcon(img);
@@ -278,7 +283,7 @@ class GUI {
                 @Override
                 public void valueChanged(ListSelectionEvent event) {
                     if (onlineServersTable.getSelectedRow() > -1) {
-                        setImage(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4));
+                        setSelectedServerInfo(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4));
 
                         playersLabel.setText(Parser.parseServerInfo((String)onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3)));
 
@@ -290,7 +295,7 @@ class GUI {
                 @Override
                 public void valueChanged(ListSelectionEvent event) {
                     if (recentServersTable.getSelectedRow() > -1) {
-                        setImage(recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 4));
+                        setSelectedServerInfo(recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 4));
 
                         playersLabel.setText(Parser.parseServerInfo((String)recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 3)));
                     }
@@ -433,87 +438,50 @@ class GUI {
             }
         }
 
-        // function used to set image in the rightPanel according to the selected server
-        private void setImage(Object map) {
+        private void initMapNames() {
+            mapNames = new HashMap<>();
+
+            mapNames.put("obj/obj_team1", "The Hunt");
+            mapNames.put("obj/obj_team2", "V2 Rocket Facility");
+            mapNames.put("obj/obj_team3", "Omaha Beach");
+            mapNames.put("obj/obj_team4", "The Bridge");
+            mapNames.put("dm/mohdm1", "Southern France");
+            mapNames.put("dm/mohdm2", "Destroyed Village");
+            mapNames.put("dm/mohdm3", "Remagen");
+            mapNames.put("dm/mohdm4", "The Crossroads");
+            mapNames.put("dm/mohdm5", "Snowy Park");
+            mapNames.put("dm/mohdm6", "Stalingrad");
+            mapNames.put("dm/mohdm7", "Algiers");
+        }
+
+        private void setSelectedServerInfo(Object map) {
             String localMap = (String) map;
 
+            if(mapNames.containsKey(localMap.toLowerCase())) {
+                setMapImage(mapNames.get(localMap.toLowerCase()));
+                setMapDescription(mapNames.get(localMap.toLowerCase()));
+            } else {
+                setMapImage("default");
+                setMapDescription("");
+            }
+        }
+
+        private void setMapImage(String mapName) {
+            mapName = mapName.toLowerCase().replace(" ", "_");
+
             try {
-                switch( localMap.toLowerCase() ) {
-                    case "obj/obj_team1":
-                        img = ImageIO.read(new File("images/thehunt.jpg"));
-                        imageLabel.setText("<html><b>The Hunt</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
+                img = ImageIO.read(new File("images/" + mapName + ".jpg"));
+                imageLabel.setIcon(new ImageIcon(img));
 
-                    case "obj/obj_team2":
-                        img = ImageIO.read(new File("images/v2.jpg"));
-                        imageLabel.setText("<html><b>V2 Rocket Facility</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "obj/obj_team3":
-                        img = ImageIO.read(new File("images/omaha.jpg"));
-                        imageLabel.setText("<html><b>Omaha Beach</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "obj/obj_team4":
-                        img = ImageIO.read(new File("images/thebridge.jpg"));
-                        imageLabel.setText("<html><b>The Bridge</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "dm/mohdm1":
-                        img = ImageIO.read(new File("images/france.jpg"));
-                        imageLabel.setText("<html><b>Southern France</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "dm/mohdm2":
-                        img = ImageIO.read(new File("images/destroyed.jpg"));
-                        imageLabel.setText("<html><b>Destroyed Village</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break
-                                ;
-                    case "dm/mohdm3":
-                        img = ImageIO.read(new File("images/remagen.jpg"));
-                        imageLabel.setText("<html><b>Remagen</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "dm/mohdm4":
-                        img = ImageIO.read(new File("images/thecrossroads.jpg"));
-                        imageLabel.setText("<html><b>The Crossroads</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "dm/mohdm5":
-                        img = ImageIO.read(new File("images/snowy.jpg"));
-                        imageLabel.setText("<html><b>Snowy Park</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "dm/mohdm6":
-                        img = ImageIO.read(new File("images/stalingrad.jpg"));
-                        imageLabel.setText("<html><b>Stalingrad</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    case "dm/mohdm7":
-                        img = ImageIO.read(new File("images/algiers.jpg"));
-                        imageLabel.setText("<html><b>Algiers</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-
-                    default:
-                        img = ImageIO.read(new File("images/default.jpg"));
-                        imageLabel.setText("<html><b>" + map + "</b></html>");
-                        imageLabel.setIcon(new ImageIcon(img));
-                        break;
-                }
             } catch (IOException e) {
                 e.printStackTrace();
+                // TODO: set empty image placeholder
             }
+
+        }
+
+        private void setMapDescription(String mapName) {
+            imageLabel.setText("<html><b>" + mapName + "</b></html>");
         }
     }
 
