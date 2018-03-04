@@ -41,6 +41,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
+
 class GUI {
 
     public static class MainFrame extends JPanel {
@@ -230,18 +232,20 @@ class GUI {
 
             try {
                 img = ImageIO.read(new File("images/default.jpg"));
-                ImageIcon icon = new ImageIcon(img);
-                imageLabel = new JLabel(" ", icon, JLabel.CENTER);
-                imageLabel.setVerticalTextPosition(JLabel.BOTTOM);
-                imageLabel.setHorizontalTextPosition(JLabel.CENTER);
-                imageLabel.setOpaque(true);
-                imageLabel.setFont(imageLabel.getFont().deriveFont(10f));
-                imagePanel.add(imageLabel, BorderLayout.CENTER);
-                imagePanel.setBorder(BorderFactory.createTitledBorder(eBorder));
 
             } catch (IOException e2) {
                 e2.printStackTrace();
+                img = new BufferedImage(200, 148, TYPE_INT_ARGB);
             }
+
+            ImageIcon icon = new ImageIcon(img);
+            imageLabel = new JLabel(" ", icon, JLabel.CENTER);
+            imageLabel.setVerticalTextPosition(JLabel.BOTTOM);
+            imageLabel.setHorizontalTextPosition(JLabel.CENTER);
+            imageLabel.setOpaque(true);
+            imageLabel.setFont(imageLabel.getFont().deriveFont(10f));
+            imagePanel.add(imageLabel, BorderLayout.CENTER);
+            imagePanel.setBorder(BorderFactory.createTitledBorder(eBorder));
 
             // GridBagLayout constraints to imagePanel
             gbc.gridx = gbc.gridy = 0;
@@ -471,13 +475,13 @@ class GUI {
 
             try {
                 img = ImageIO.read(new File("images/" + mapName + ".jpg"));
-                imageLabel.setIcon(new ImageIcon(img));
 
             } catch (IOException e) {
                 e.printStackTrace();
-                // TODO: set empty image placeholder
+                img = new BufferedImage(200, 148, TYPE_INT_ARGB);
             }
 
+            imageLabel.setIcon(new ImageIcon(img));
         }
 
         private void setMapDescription(String mapName) {
