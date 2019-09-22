@@ -1,8 +1,4 @@
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -17,18 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -57,6 +42,7 @@ class GUI {
         private JLabel imageLabel;
         private BufferedImage img;
         private Map<String, String> mapNames;
+        private static JPanel loadingPanel;
 
         // row filter used to skip rows, which are empty
         private RowFilter<CustomTableModel, Integer> emptyFilter = new RowFilter<CustomTableModel, Integer>() {
@@ -102,6 +88,13 @@ class GUI {
             Border eBorder = BorderFactory.createEtchedBorder();
 
             this.setPreferredSize(new Dimension(1000, 600));
+
+            loadingPanel = new JPanel(new BorderLayout());
+            ImageIcon loadingIcon = new ImageIcon("images/ajax-loader.gif");
+            loadingPanel.add(new JLabel("Loading...", loadingIcon, JLabel.CENTER), BorderLayout.CENTER);
+            loadingPanel.setPreferredSize(new Dimension(100, 50));
+            add(loadingPanel);
+            loadingPanel.setVisible(false);
 
             /**
              * Tabbed panel, displaying server lists
@@ -376,15 +369,29 @@ class GUI {
             // listener used to refresh current table
             refreshButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    CustomTableModel model;
+                    loadingPanel.setVisible(true);
 
-                    if( MainFrame.currentTab == 0) {
-                        model = (CustomTableModel) onlineServersTable.getModel();
-                        model.refresh(0);
-                    } else {
-                        model = (CustomTableModel) recentServersTable.getModel();
-                        model.refresh(1);
-                    }
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() {
+                            CustomTableModel model;
+
+                            if( MainFrame.currentTab == 0) {
+                                model = (CustomTableModel) onlineServersTable.getModel();
+                                model.refresh(0);
+                            } else {
+                                model = (CustomTableModel) recentServersTable.getModel();
+                                model.refresh(1);
+                            }
+
+                            return null;
+                        }
+
+                        @Override
+                        protected void done() {
+                            loadingPanel.setVisible(false);
+                        }
+                    }.execute();
                 }
             });
 
