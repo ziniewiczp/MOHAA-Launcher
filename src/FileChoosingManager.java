@@ -13,9 +13,8 @@ class FileChoosingManager {
             FilesManager.initConfigFileWithPath(Parser.path);
 
             return true;
-
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

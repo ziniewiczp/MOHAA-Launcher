@@ -30,54 +30,61 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 class GUI {
 
+    public static String getCurrentlySelectedGame() {
+        return (MainFrame.gameFilter == null)
+            ? "Medal of Honor: Allied Assault"
+            : MainFrame.gameFilter.getSelectedItem().toString();
+    }
+
+    static void createAndShowGUI() {
+        //Create and set up the window.
+        JFrame frame = new JFrame("Medal of Honor: Allied Assault Launcher");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        ImageIcon icon = new ImageIcon("images/icon.png");
+        frame.setIconImage(icon.getImage());
+
+        //Add content to the window.
+        frame.add(new MainFrame(), BorderLayout.CENTER);
+
+        //Display the window.
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
     public static class MainFrame extends JPanel {
         private static final long serialVersionUID = 1L;
         private static int currentTab = 0;
-        private JTable onlineServersTable;
-        private JTable recentServersTable;
-        private TableRowSorter<CustomTableModel> onlineSorter;
-        private TableRowSorter<CustomTableModel> recentSorter;
-        private JTextField filterText;
-        private JLabel playersLabel;
-        private JLabel imageLabel;
+        private final JTable onlineServersTable;
+        private final JTable recentServersTable;
+        private static JComboBox gameFilter;
+        private final TableRowSorter<CustomTableModel> onlineSorter;
+        private final TableRowSorter<CustomTableModel> recentSorter;
+        private final JTextField filterText;
+        private final JLabel playersLabel;
+        private final JLabel imageLabel;
         private BufferedImage img;
         private Map<String, String> mapNames;
         private static JPanel loadingPanel;
 
         // row filter used to skip rows, which are empty
-        private RowFilter<CustomTableModel, Integer> emptyFilter = new RowFilter<CustomTableModel, Integer>() {
+        private final RowFilter<CustomTableModel, Integer> emptyFilter = new RowFilter<CustomTableModel, Integer>() {
             @Override
-            public boolean include(RowFilter.Entry<? extends CustomTableModel, ? extends Integer> entry)
-            {
-                boolean included = true;
+            public boolean include(RowFilter.Entry<? extends CustomTableModel, ? extends Integer> entry) {
                 Object cellValue = entry.getModel().getValueAt(entry.getIdentifier(), 0);
-                if (cellValue == null || cellValue.toString().trim().isEmpty())
-                    included = false;
-
-                return included;
+                return !(cellValue == null || cellValue.toString().trim().isEmpty());
             }
         };
 
         // custom comparator to sort players count properly
-        private Comparator<String> playersComparator = new Comparator<String>() {
+        private final Comparator<String> playersComparator = new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                if( o1.equals("") && o2.equals(""))
-                    return 0;
-                else if( o1.equals("") && !o2.equals(""))
-                    return -1;
-                else if( !o1.equals("") && o2.equals(""))
-                    return 1;
+                int firstNumber =   (o1.equals("")) ? 0 : Integer.parseInt(o1.split("/")[0]);
+                int secondNumber =  (o2.equals("")) ? 0 : Integer.parseInt(o2.split("/")[0]);
 
-                String firstNumber = o1.split("\\/")[0];
-                String secondNumber = o2.split("\\/")[0];
-
-                if(Integer.parseInt(firstNumber) > Integer.parseInt(secondNumber))
-                    return 1;
-                else if( Integer.parseInt(firstNumber) < Integer.parseInt(secondNumber) )
-                    return -1;
-                else
-                    return 0;
+                return Integer.compare(firstNumber, secondNumber);
             }
         };
 
@@ -165,8 +172,7 @@ class GUI {
             // change listener to recognize which tab is selected            
             tabbedPane.getModel().addChangeListener(new ChangeListener() {
                 @Override
-                public void stateChanged(ChangeEvent e)
-                {
+                public void stateChanged(ChangeEvent e) {
                     MainFrame.currentTab = tabbedPane.getSelectedIndex();
                 }
             });
@@ -185,7 +191,7 @@ class GUI {
                             IP = Parser.recentServersArray[row][3];
 
                         Parser.updateRecentServersList(IP);
-                        Launcher.connectTo(IP);
+                        Launcher.playMultiplayer(IP);
                     }
                 }
             };
@@ -283,7 +289,6 @@ class GUI {
                         setSelectedServerInfo(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4));
 
                         playersLabel.setText(Parser.parseServerInfo((String)onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3)));
-
                     }
                 }
             });
@@ -325,9 +330,11 @@ class GUI {
             gbc.gridwidth = 2;
             gbc.weighty = 2;
 
+            JPanel filtersPanel = new JPanel();
+
             JPanel textPanel = new JPanel();
-            JLabel textLabel = new JLabel("Search:");
-            textPanel.add(textLabel);
+            JLabel searchLabel = new JLabel("Search:");
+            textPanel.add(searchLabel);
             filterText = new JTextField(15);
 
             //Whenever filterText changes, invoke nameFilter.
@@ -346,9 +353,28 @@ class GUI {
                 }
             });
 
-            textLabel.setLabelFor(filterText);
+            searchLabel.setLabelFor(filterText);
             textPanel.add(filterText);
-            bottomPanel.add(textPanel, BorderLayout.WEST);
+            filtersPanel.add(textPanel);
+
+            String[] availableGames = {
+                    "Medal of Honor: Allied Assault",
+                    "Medal of Honor: Allied Assault Spearhead",
+                    "Medal of Honor: Allied Assault Breakthrough"
+            };
+
+            gameFilter = new JComboBox(availableGames);
+            JLabel gameFilterLabel = new JLabel("Game version:");
+            gameFilterLabel.setLabelFor(gameFilter);
+            filtersPanel.add(gameFilterLabel);
+            filtersPanel.add(gameFilter);
+
+            gameFilter.addActionListener((new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) { refresh(); }
+            }));
+
+            bottomPanel.add(filtersPanel, BorderLayout.WEST);
 
             JButton launchGameButton = new JButton("Launch game");
 
@@ -356,60 +382,35 @@ class GUI {
 
             JButton connectButton = new JButton("Connect");
 
-            JLabel copyright = new JLabel("<html><center>Copyright \u00a9 2016 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
+            JLabel copyright = new JLabel("<html><center>Copyright © 2016 - 2023 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
 
             launchGameButton.addActionListener((new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    Launcher.launchGame();
+                    Launcher.playSingleplayer();
                 }
             }));
 
             // listener used to refresh current table
             refreshButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    loadingPanel.setVisible(true);
-
-                    new SwingWorker<Void, Void>() {
-                        @Override
-                        protected Void doInBackground() {
-                            CustomTableModel model;
-
-                            if( MainFrame.currentTab == 0) {
-                                model = (CustomTableModel) onlineServersTable.getModel();
-                                model.refresh(0);
-                            } else {
-                                model = (CustomTableModel) recentServersTable.getModel();
-                                model.refresh(1);
-                            }
-
-                            return null;
-                        }
-
-                        @Override
-                        protected void done() {
-                            loadingPanel.setVisible(false);
-                        }
-                    }.execute();
-                }
+                public void actionPerformed(ActionEvent e) { refresh(); }
             });
 
             // listener used to connect to selected server
             connectButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    String IP;
+                    boolean onlineServerSelected = (onlineServersTable.getSelectedRow() != -1 && MainFrame.currentTab == 0);
+                    boolean recentServerSelected = (recentServersTable.getSelectedRow() != -1 && MainFrame.currentTab == 1);
 
                     // checking if some row on current tab is selected
-                    if( (onlineServersTable.getSelectedRow() != -1 && MainFrame.currentTab == 0) ||
-                            (recentServersTable.getSelectedRow() != -1) && MainFrame.currentTab == 1) {
-                        if( MainFrame.currentTab == 0)
-                            IP = Parser.serversArray[onlineServersTable.getSelectedRow()][3];
-                        else
-                            IP = Parser.recentServersArray[recentServersTable.getSelectedRow()][3];
+                    if(onlineServerSelected || recentServerSelected) {
+                       String ip = (MainFrame.currentTab == 0)
+                           ? Parser.serversArray[onlineServersTable.getSelectedRow()][3]
+                           : Parser.recentServersArray[recentServersTable.getSelectedRow()][3];
 
-                        Parser.updateRecentServersList(IP);
-                        Launcher.connectTo(IP);
+                        Parser.updateRecentServersList(ip);
+                        Launcher.playMultiplayer(ip);
                     }
                 }
             } );
@@ -494,15 +495,37 @@ class GUI {
         private void setMapDescription(String mapName) {
             imageLabel.setText("<html><b>" + mapName + "</b></html>");
         }
+
+        private void refresh() {
+            loadingPanel.setVisible(true);
+
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    CustomTableModel onlineServersModel = (CustomTableModel) onlineServersTable.getModel();
+                    onlineServersModel.refresh(0);
+
+                    CustomTableModel recentServersModel = (CustomTableModel) recentServersTable.getModel();
+                    recentServersModel.refresh(1);
+
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    loadingPanel.setVisible(false);
+                }
+            }.execute();
+        }
     }
 
 
     public static class CustomTableModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
         private Object[][] serversArray;
-        private int listLen;
+        private final int listLen;
 
-        private String[] columnNames = {"Server Name",
+        private final String[] columnNames = {"Server Name",
                 "Players",
                 "Localization",
                 "IP Address",
@@ -513,9 +536,7 @@ class GUI {
             this.serversArray = new Object[serversArray.length][5];
 
             for(int i = 0; i < serversArray.length; i++) {
-                for( int j = 0; j < 5; j++ ) {
-                    this.serversArray[i][j] = serversArray[i][j];
-                }
+                System.arraycopy(serversArray[i], 0, this.serversArray[i], 0, 5);
             }
         }
 
@@ -526,10 +547,7 @@ class GUI {
         void refresh(int whichTable) {
             try {
                 Parser.parseOnlineServers();
-                if( whichTable == 0)
-                    this.serversArray = Parser.serversArray;
-                else
-                    this.serversArray = Parser.recentServersArray;
+                this.serversArray = (whichTable == 0) ? Parser.serversArray : Parser.recentServersArray;
                 fireTableDataChanged();
 
             } catch (Exception e) {
@@ -560,28 +578,9 @@ class GUI {
 
         @Override
         public Class<?> getColumnClass(int column) {
-            if( column == 1)
-                return Integer.class;
-            else
-                return getValueAt(0, column).getClass();
+            return (column == 1)
+                ? Integer.class
+                : getValueAt(0, column).getClass();
         }
-    }
-
-
-    static void createAndShowGUI() {
-        //Create and set up the window.
-        JFrame frame = new JFrame("Medal of Honor: Allied Assault Launcher");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        ImageIcon icon = new ImageIcon("images/icon.png");
-        frame.setIconImage(icon.getImage());
-
-        //Add content to the window.
-        frame.add(new MainFrame(), BorderLayout.CENTER);
-
-        //Display the window.
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
     }
 }
