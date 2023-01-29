@@ -1,3 +1,5 @@
+package mohaa_launcher;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,13 +82,13 @@ class Parser {
         } catch (IOException ex) {
             ex.printStackTrace();
 
-            boolean choice = NotificationManager.displayErrorYesNoOptionDialog(GT_NOT_RESPONDING_MESSAGE, CONNECTION_ERROR);
-
-            if(choice) {
-                Launcher.playSingleplayer();
-            }
-
-            System.exit(0);
+//            boolean choice = NotificationManager.displayErrorYesNoOptionDialog(GT_NOT_RESPONDING_MESSAGE, CONNECTION_ERROR);
+//
+//            if(choice) {
+//                Launcher.playSingleplayer();
+//            }
+//
+//            System.exit(0);
         }
     }
     

@@ -1,7 +1,5 @@
+.gradle/*
 .idea/*
-out/*
-config.txt
-recentServers.txt
-lib/*
-Mohaa-Launcher.iml
-src/META-INF/*
+build/*
+src/main/resources/config.txt
+src/main/resources/recentServers.txt

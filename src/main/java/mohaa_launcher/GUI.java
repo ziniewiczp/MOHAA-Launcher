@@ -1,3 +1,5 @@
+package mohaa_launcher;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,6 +10,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +44,13 @@ class GUI {
         JFrame frame = new JFrame("Medal of Honor: Allied Assault Launcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        ImageIcon icon = new ImageIcon("images/icon.png");
+        try {
+            System.out.println(new File(".").getCanonicalPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        ImageIcon icon = new ImageIcon("src\\main\\resources\\images\\icon.png");
         frame.setIconImage(icon.getImage());
 
         //Add content to the window.
@@ -54,6 +63,7 @@ class GUI {
     }
 
     public static class MainFrame extends JPanel {
+        @Serial
         private static final long serialVersionUID = 1L;
         private static int currentTab = 0;
         private final JTable onlineServersTable;
@@ -97,7 +107,7 @@ class GUI {
             this.setPreferredSize(new Dimension(1000, 600));
 
             loadingPanel = new JPanel(new BorderLayout());
-            ImageIcon loadingIcon = new ImageIcon("images/ajax-loader.gif");
+            ImageIcon loadingIcon = new ImageIcon("src\\main\\resources\\images\\ajax-loader.gif");
             loadingPanel.add(new JLabel("Loading...", loadingIcon, JLabel.CENTER), BorderLayout.CENTER);
             loadingPanel.setPreferredSize(new Dimension(100, 50));
             add(loadingPanel);
@@ -230,7 +240,7 @@ class GUI {
             initMapNames();
 
             try {
-                img = ImageIO.read(new File("images/default.jpg"));
+                img = ImageIO.read(new File("src\\main\\resources\\images\\default.jpg"));
 
             } catch (IOException e2) {
                 e2.printStackTrace();
@@ -382,7 +392,7 @@ class GUI {
 
             JButton connectButton = new JButton("Connect");
 
-            JLabel copyright = new JLabel("<html><center>Copyright © 2016 - 2023 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
+            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016 - 2023 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
 
             launchGameButton.addActionListener((new ActionListener() {
@@ -482,7 +492,7 @@ class GUI {
             mapName = mapName.toLowerCase().replace(" ", "_");
 
             try {
-                img = ImageIO.read(new File("images/" + mapName + ".jpg"));
+                img = ImageIO.read(new File("src\\main\\resources\\images\\" + mapName + ".jpg"));
 
             } catch (IOException e) {
                 e.printStackTrace();

@@ -1,3 +1,5 @@
+package mohaa_launcher;
+
 import javax.swing.*;
 
 public class Main {

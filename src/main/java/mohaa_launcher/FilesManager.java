@@ -1,3 +1,5 @@
+package mohaa_launcher;
+
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
@@ -5,7 +7,7 @@ import java.util.*;
 class FilesManager {
 
     static void initConfigFileWithPath(String path) {
-        try(PrintWriter writer = new PrintWriter("config.txt", "UTF-8")) {
+        try(PrintWriter writer = new PrintWriter("src\\main\\resources\\config.txt", "UTF-8")) {
             writer.println(path);
 
         } catch (UnsupportedEncodingException | FileNotFoundException ex) {
@@ -14,7 +16,7 @@ class FilesManager {
     }
 
     static String getPathFromConfigFile() {
-       try(Scanner scanner = new Scanner(Paths.get("config.txt"))) {
+       try(Scanner scanner = new Scanner(Paths.get("src\\main\\resources\\config.txt"))) {
            String path = scanner.nextLine();
 
            return (path.equals(""))
@@ -27,7 +29,7 @@ class FilesManager {
     }
 
     static void updateRecentServersFile(List<String> recentServersList) {
-        try (PrintWriter writer = new PrintWriter("recentServers.txt", "UTF-8")) {
+        try (PrintWriter writer = new PrintWriter("src\\main\\resources\\recentServers.txt", "UTF-8")) {
             for(String item : recentServersList) {
                 writer.println(item);
             }
@@ -40,7 +42,7 @@ class FilesManager {
     static List<String> createRecentServersListFromFile() {
         List<String> recentServersList = new ArrayList<>();
 
-        try(Scanner scanner = new Scanner(Paths.get("recentServers.txt"))) {
+        try(Scanner scanner = new Scanner(Paths.get("src\\main\\resources\\recentServers.txt"))) {
             while( scanner.hasNext() ) {
                 recentServersList.add(scanner.next());
             }
