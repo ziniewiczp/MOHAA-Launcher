@@ -1,5 +1,7 @@
 package mohaa_launcher;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +42,8 @@ class GUI {
     }
 
     static void createAndShowGUI() {
+        FlatDarculaLaf.setup();
+
         //Create and set up the window.
         JFrame frame = new JFrame("Medal of Honor: Allied Assault Launcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -392,7 +396,7 @@ class GUI {
 
             JButton connectButton = new JButton("Connect");
 
-            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016 - 2023 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
+            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
 
             launchGameButton.addActionListener((new ActionListener() {
