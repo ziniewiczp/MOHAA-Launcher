@@ -3,6 +3,8 @@ package mohaa_launcher;
 import com.formdev.flatlaf.FlatDarculaLaf;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -20,12 +22,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -204,6 +201,57 @@ class GUI {
                     }
                 }
             };
+
+            // a context menu invoked after clicking right mouse button on one of the rows
+            final JPopupMenu contextPopupMenu = new JPopupMenu();
+
+            // listener used to select a row after clicking on it with the right mouse button
+            contextPopupMenu.addPopupMenuListener(new PopupMenuListener() {
+
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            JPopupMenu popup = (JPopupMenu) e.getSource();
+                            JTable table = (JTable) popup.getInvoker();
+
+                            int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(contextPopupMenu, new Point(0, 0), table));
+                            if (rowAtPoint > -1) {
+                                table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) { }
+            });
+
+            JMenuItem copyIpItem = new JMenuItem("Copy the IP address");
+            copyIpItem.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Component c = (Component) e.getSource();
+                    JPopupMenu popup = (JPopupMenu) c.getParent();
+                    JTable table = (JTable) popup.getInvoker();
+
+                    String selectedRowIp = table.getModel().getValueAt(table.getSelectedRow(), 3).toString();
+
+                    StringSelection stringSelection = new StringSelection(selectedRowIp);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(stringSelection, null);
+                }
+            });
+
+            contextPopupMenu.add(copyIpItem);
+
+            onlineServersTable.setComponentPopupMenu(contextPopupMenu);
+            recentServersTable.setComponentPopupMenu(contextPopupMenu);
 
             onlineServersTable.addMouseListener(doubleClickListener);
             recentServersTable.addMouseListener(doubleClickListener);
