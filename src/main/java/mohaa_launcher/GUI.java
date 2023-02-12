@@ -194,18 +194,13 @@ class GUI {
             // listener used to connecting to the server by double-clicking on its row
             MouseListener doubleClickListener = new MouseAdapter() {
                 public void mousePressed(MouseEvent me) {
-                    JTable table =(JTable) me.getSource();
-                    Point p = me.getPoint();
-                    int row = table.rowAtPoint(p);
-                    if (me.getClickCount() == 2) {
-                        String IP;
-                        if( MainFrame.currentTab == 0)
-                            IP = Parser.serversArray[row][3];
-                        else
-                            IP = Parser.recentServersArray[row][3];
+                    if (SwingUtilities.isLeftMouseButton(me) && me.getClickCount() == 2) {
+                        JTable table = (JTable) me.getSource();
 
-                        Parser.updateRecentServersList(IP);
-                        Launcher.playMultiplayer(IP);
+                        String ip = table.getModel().getValueAt(table.getSelectedRow(), 3).toString();
+
+                        Parser.updateRecentServersList(ip);
+                        Launcher.playMultiplayer(ip);
                     }
                 }
             };
