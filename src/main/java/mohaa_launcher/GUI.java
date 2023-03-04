@@ -131,7 +131,7 @@ class GUI {
             gbc.weightx = 80;
             gbc.weighty = 98;
 
-            CustomTableModel onlineModel = new CustomTableModel(Parser.serversArray, 50);
+            CustomTableModel onlineModel = new CustomTableModel(Parser.serversArray, Parser.serversArray.length);
             onlineServersTable = new JTable(onlineModel);
             onlineServersTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
             onlineServersTable.setFillsViewportHeight(true);
@@ -345,7 +345,8 @@ class GUI {
                     if (onlineServersTable.getSelectedRow() > -1) {
                         setSelectedServerInfo(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4));
 
-                        playersLabel.setText(Parser.parseServerInfo((String)onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3)));
+                        String ip = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3);
+                        playersLabel.setText(Parser.serverInfo.get(ip));
                     }
                 }
             });
@@ -356,7 +357,8 @@ class GUI {
                     if (recentServersTable.getSelectedRow() > -1) {
                         setSelectedServerInfo(recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 4));
 
-                        playersLabel.setText(Parser.parseServerInfo((String)recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 3)));
+                        String ip = (String) recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 3);
+                        playersLabel.setText(Parser.serverInfo.get(ip));
                     }
                 }
             });
@@ -439,7 +441,7 @@ class GUI {
 
             JButton connectButton = new JButton("Connect");
 
-            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by GameTracker.com</center></html>", SwingConstants.CENTER);
+            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by www.mohaaservers.tk</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
 
             launchGameButton.addActionListener((new ActionListener() {

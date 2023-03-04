@@ -15,11 +15,9 @@ class Parser {
     static String[][] serversArray;
     static String[][] recentServersArray;
     static List<String> recentServersList;
+    static HashMap<String, String> serverInfo = new HashMap<>();
 
-    private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36";
-    private static final String GT_NOT_RESPONDING_MESSAGE = "GameTracker.com is not responding, "
-            + "MOHAA Launcher will now close. Do you want to launch the game?";
-    private static final String CONNECTION_ERROR = "Connection error";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
 
     static void initParser() {
         recentServersList = FilesManager.createRecentServersListFromFile();
@@ -28,7 +26,6 @@ class Parser {
     
     static void parseOnlineServers() {
         boolean recentServersFound;
-        serversArray = new String[50][5];
 
         if( recentServersList.size() > 0 ) {
             recentServersFound = true;
@@ -47,85 +44,68 @@ class Parser {
         gameMapping.put("Medal of Honor: Allied Assault Spearhead", "sh");
         gameMapping.put("Medal of Honor: Allied Assault Breakthrough", "bt");
 
-        String url = "http://www.gametracker.com/search/"
-            + gameMapping.get(GUI.getCurrentlySelectedGame())
-            + "/?sort=3&order=DESC&searchipp=50#search";
+        Document document;
 
         try {
             // creating JSoup document
-            Document doc = Jsoup.connect(url)
+             document = Jsoup.connect("https://www.mohaaservers.tk/")
                 .userAgent(USER_AGENT)
                 .get();
 
-            int rowCounter = 0;
-
-            for (Element table : doc.select("table[class=table_lst table_lst_srs]")) {
-                for (Element row : table.select("tr")) {
-
-                    Elements td = row.select("td");
-
-                    // ignore headers
-                    if( td.get(2).text().equals("Server Name"))
-                        continue;
-
-                    populateRow(serversArray, rowCounter, td);
-
-                    if( recentServersFound && recentServersList.contains(td.get(6).text()) ) {
-                        int currentServerNumber = recentServersList.indexOf(td.get(6).text());
-
-                        populateRow(recentServersArray, currentServerNumber, td);
-                    }
-
-                    rowCounter++;
-                }
-            }
         } catch (IOException ex) {
             ex.printStackTrace();
 
-//            boolean choice = NotificationManager.displayErrorYesNoOptionDialog(GT_NOT_RESPONDING_MESSAGE, CONNECTION_ERROR);
-//
-//            if(choice) {
-//                Launcher.playSingleplayer();
-//            }
-//
-//            System.exit(0);
+            serversArray = new String[1][5];
+            for(String[] row : serversArray) {
+                Arrays.fill(row, "");
+            }
+
+            NotificationManager.displayMessageDialog("Server responded with " + ex.getMessage());
+
+            return;
+        }
+
+        serversArray = new String[countOnlineServers(document)][5];
+
+        int currentRow = 0;
+
+        for (Element table : document.select("table[class=sortresults]")) {
+            for (Element row : table.select("tr")) {
+
+                Elements td = row.select("td");
+
+                // ignore headers and offline servers
+                if (td.size() == 0 || td.get(0).text().contains("Offline")) {
+                    continue;
+                }
+
+                populateRow(serversArray, currentRow, td);
+
+                if (recentServersFound && recentServersList.contains(td.get(6).text())) {
+                    int currentServerNumber = recentServersList.indexOf(td.get(6).text());
+
+                    populateRow(recentServersArray, currentServerNumber, td);
+                }
+
+                currentRow++;
+            }
         }
     }
-    
-    static String parseServerInfo(String ip) {
-        String serverInfo = "<html><b>Players online:</b><br/><ol>";
 
-        try {
-            // creating JSoup document
-            Document doc = Jsoup.connect("http://www.gametracker.com/server_info/" + ip + "/")
-                .userAgent(USER_AGENT)
-                .get();
+    private static int countOnlineServers(Document doc) {
+        int counter = 0;
 
-            for (Element table : doc.select("table[class=table_lst table_lst_stp]")) {
-                for (Element row : table.select("tr")) {
+        for (Element table : doc.select("table[class=sortresults]")) {
+            for (Element row : table.select("tr")) {
+                Elements td = row.select("td");
 
-                    Elements td = row.select("td");
-
-                    // ignore headers
-                    if (td.get(1).text().equals("Name"))
-                        continue;
-
-                    serverInfo = serverInfo + "<li>" + td.get(1).text() + "</li>";
+                if ((td.size() > 0) && td.get(0).text().contains("Online")) {
+                    counter += 1;
                 }
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-
-            boolean choice = NotificationManager.displayErrorYesNoOptionDialog(GT_NOT_RESPONDING_MESSAGE, CONNECTION_ERROR);
-
-            if(choice) {
-                Launcher.playSingleplayer();
-            }
-
-            System.exit(0);
         }
 
-        return serverInfo + "</ol></html>";
+        return counter;
     }
 
     static void updateRecentServersList(String givenIP) {
@@ -136,17 +116,20 @@ class Parser {
     }
 
     private static void populateRow(String[][] array, int rowNumber, Elements td) {
-        array[rowNumber][0] = td.get(2).text();  // server name
-        array[rowNumber][1] = td.get(3).text();  // players count
+        array[rowNumber][0] = td.get(3).text();  // server name
+        array[rowNumber][1] = td.get(7).text();  // players count
+        array[rowNumber][2] = (td.get(2).select("img").get(0).attr("alt")).toUpperCase();  // localization
+        array[rowNumber][3] = td.get(4).text();  // IP address
+        array[rowNumber][4] = td.get(6).text();  // map
 
-        // get "GB" from "/search/mohaa/GB/"
-        String localizationUrl = td.get(5).select("a[href]").attr("href");
-        int beginning = localizationUrl.length() - 3;
-        int end = localizationUrl.length() - 1;
+        String serverInfoString = "<html><b>Players online:</b><br/><ol>";
 
-        array[rowNumber][2] = localizationUrl.substring(beginning, end);   // localization
+        for(Element player : td.get(8).select("li")) {
+            serverInfoString += "<li>" + player.text() + "</li>";
+        }
 
-        array[rowNumber][3] = td.get(6).text();  // IP address
-        array[rowNumber][4] = td.get(7).text();  // map
+        serverInfoString += "</ol></html>";
+
+        serverInfo.put(array[rowNumber][3], serverInfoString);
     }
 }
