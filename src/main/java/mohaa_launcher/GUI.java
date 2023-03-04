@@ -438,21 +438,12 @@ class GUI {
 
             bottomPanel.add(filtersPanel, BorderLayout.WEST);
 
-            JButton launchGameButton = new JButton("Launch game");
-
             JButton refreshButton = new JButton("Refresh");
 
             JButton connectButton = new JButton("Connect");
 
             JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by www.mohaaservers.tk</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
-
-            launchGameButton.addActionListener((new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Launcher.playSingleplayer();
-                }
-            }));
 
             // listener used to refresh current table
             refreshButton.addActionListener(new ActionListener() {
@@ -483,7 +474,6 @@ class GUI {
 
             // additional panel, used to align both buttons to the EAST
             JPanel buttonPanel = new JPanel();
-            buttonPanel.add(launchGameButton);
             buttonPanel.add(refreshButton);
             buttonPanel.add(connectButton);
 

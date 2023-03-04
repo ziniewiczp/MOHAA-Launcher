@@ -18,10 +18,6 @@ class Launcher {
         launchGame(" set cl_playintro 0 +connect " + ip, game);
     }
 
-    static void playSingleplayer() {
-        launchGame(" +set cl_playintro 0", "AA");
-    }
-
     private static void launchGame(String parameters, String game) {
         try {
             Runtime.getRuntime().exec(Parser.path
