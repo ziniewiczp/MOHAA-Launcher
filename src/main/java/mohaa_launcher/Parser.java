@@ -19,6 +19,8 @@ class Parser {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
 
+    private static final int COLUMNS = 6;
+
     static void initParser() {
         recentServersList = FilesManager.createRecentServersListFromFile();
         path = FilesManager.getPathFromConfigFile();
@@ -29,10 +31,10 @@ class Parser {
 
         if( recentServersList.size() > 0 ) {
             recentServersFound = true;
-            recentServersArray = new String[recentServersList.size()][5];
+            recentServersArray = new String[recentServersList.size()][COLUMNS];
         } else {
             recentServersFound = false;
-            recentServersArray = new String[1][5];
+            recentServersArray = new String[1][COLUMNS];
         }
 
         for(String[] row : recentServersArray) {
@@ -55,7 +57,7 @@ class Parser {
         } catch (IOException ex) {
             ex.printStackTrace();
 
-            serversArray = new String[1][5];
+            serversArray = new String[1][COLUMNS];
             for(String[] row : serversArray) {
                 Arrays.fill(row, "");
             }
@@ -65,7 +67,7 @@ class Parser {
             return;
         }
 
-        serversArray = new String[countOnlineServers(document)][5];
+        serversArray = new String[countOnlineServers(document)][COLUMNS];
 
         int currentRow = 0;
 
@@ -116,11 +118,13 @@ class Parser {
     }
 
     private static void populateRow(String[][] array, int rowNumber, Elements td) {
-        array[rowNumber][0] = td.get(3).text();  // server name
-        array[rowNumber][1] = td.get(7).text();  // players count
-        array[rowNumber][2] = (td.get(2).select("img").get(0).attr("alt")).toUpperCase();  // localization
-        array[rowNumber][3] = td.get(4).text();  // IP address
-        array[rowNumber][4] = td.get(6).text();  // map
+        String game = td.get(1).select("img").get(0).attr("alt");
+        array[rowNumber][0] = game.substring(game.length() - 2); // game
+        array[rowNumber][1] = td.get(3).text();  // server name
+        array[rowNumber][2] = td.get(7).text();  // players count
+        array[rowNumber][3] = (td.get(2).select("img").get(0).attr("alt")).toUpperCase();  // localization
+        array[rowNumber][4] = td.get(4).text();  // IP address
+        array[rowNumber][5] = td.get(6).text();  // map
 
         String serverInfoString = "<html><b>Players online:</b><br/><ol>";
 
@@ -130,6 +134,6 @@ class Parser {
 
         serverInfoString += "</ol></html>";
 
-        serverInfo.put(array[rowNumber][3], serverInfoString);
+        serverInfo.put(array[rowNumber][4], serverInfoString);
     }
 }

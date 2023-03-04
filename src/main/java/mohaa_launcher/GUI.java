@@ -95,7 +95,7 @@ class GUI {
                 int firstNumber =   (o1.equals("")) ? 0 : Integer.parseInt(o1.split("/")[0]);
                 int secondNumber =  (o2.equals("")) ? 0 : Integer.parseInt(o2.split("/")[0]);
 
-                return Integer.compare(firstNumber, secondNumber);
+                return Integer.compare(secondNumber, firstNumber);
             }
         };
 
@@ -158,27 +158,37 @@ class GUI {
 
             // setting preferred columns width
             TableColumnModel tableColumnModel = onlineServersTable.getColumnModel();
-            tableColumnModel.getColumn(0).setPreferredWidth(400);      // server name
-            tableColumnModel.getColumn(1).setPreferredWidth(30);       // players
-            tableColumnModel.getColumn(2).setPreferredWidth(25);       // localization
-            tableColumnModel.getColumn(3).setPreferredWidth(100);      // IP
-            tableColumnModel.getColumn(4).setPreferredWidth(100);      // map
+            tableColumnModel.getColumn(0).setPreferredWidth(40);    // game
+            tableColumnModel.getColumn(1).setPreferredWidth(360);   // server name
+            tableColumnModel.getColumn(2).setPreferredWidth(30);    // players
+            tableColumnModel.getColumn(3).setPreferredWidth(25);    // localization
+            tableColumnModel.getColumn(4).setPreferredWidth(100);   // IP
+            tableColumnModel.getColumn(5).setPreferredWidth(100);   // map
 
             tableColumnModel = recentServersTable.getColumnModel();
-            tableColumnModel.getColumn(0).setPreferredWidth(400);      // server name
-            tableColumnModel.getColumn(1).setPreferredWidth(30);       // players
-            tableColumnModel.getColumn(2).setPreferredWidth(25);       // localization
-            tableColumnModel.getColumn(3).setPreferredWidth(100);      // IP
-            tableColumnModel.getColumn(4).setPreferredWidth(100);      // map
+            tableColumnModel.getColumn(0).setPreferredWidth(40);    // game
+            tableColumnModel.getColumn(1).setPreferredWidth(360);   // server name
+            tableColumnModel.getColumn(2).setPreferredWidth(30);    // players
+            tableColumnModel.getColumn(3).setPreferredWidth(25);    // localization
+            tableColumnModel.getColumn(4).setPreferredWidth(100);   // IP
+            tableColumnModel.getColumn(5).setPreferredWidth(100);   // map
 
-            // centering content of Players and Localization columns
+            // centering content of Game, Players and Localization columns
             DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
             centerRenderer.setHorizontalAlignment( JLabel.CENTER );
-            onlineServersTable.getColumnModel().getColumn(1).setCellRenderer( centerRenderer );
+            onlineServersTable.getColumnModel().getColumn(0).setCellRenderer( centerRenderer );
             onlineServersTable.getColumnModel().getColumn(2).setCellRenderer( centerRenderer );
+            onlineServersTable.getColumnModel().getColumn(3).setCellRenderer( centerRenderer );
 
-            recentServersTable.getColumnModel().getColumn(1).setCellRenderer( centerRenderer );
+            recentServersTable.getColumnModel().getColumn(0).setCellRenderer( centerRenderer );
             recentServersTable.getColumnModel().getColumn(2).setCellRenderer( centerRenderer );
+            recentServersTable.getColumnModel().getColumn(3).setCellRenderer( centerRenderer );
+
+            // centering content of Game, Players and Localization columns
+            DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+            leftRenderer.setHorizontalAlignment( JLabel.LEFT );
+            onlineServersTable.getColumnModel().getColumn(1).setCellRenderer( leftRenderer );
+            recentServersTable.getColumnModel().getColumn(1).setCellRenderer( leftRenderer );
 
             // change listener to recognize which tab is selected            
             tabbedPane.getModel().addChangeListener(new ChangeListener() {
@@ -267,8 +277,11 @@ class GUI {
             recentSorter.setRowFilter(emptyFilter);
             onlineSorter.setRowFilter(emptyFilter);
 
-            onlineSorter.setComparator(1, playersComparator);
-            recentSorter.setComparator(1, playersComparator);
+            onlineSorter.setComparator(2, playersComparator);
+            recentSorter.setComparator(2, playersComparator);
+
+            onlineServersTable.getRowSorter().toggleSortOrder(2);
+            recentServersTable.getRowSorter().toggleSortOrder(2);
 
             //Add the tabbed pane to this panel.
             add(tabbedPane, gbc);
@@ -343,9 +356,9 @@ class GUI {
                 @Override
                 public void valueChanged(ListSelectionEvent event) {
                     if (onlineServersTable.getSelectedRow() > -1) {
-                        setSelectedServerInfo(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4));
+                        setSelectedServerInfo(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 5));
 
-                        String ip = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 3);
+                        String ip = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4);
                         playersLabel.setText(Parser.serverInfo.get(ip));
                     }
                 }
@@ -355,9 +368,9 @@ class GUI {
                 @Override
                 public void valueChanged(ListSelectionEvent event) {
                     if (recentServersTable.getSelectedRow() > -1) {
-                        setSelectedServerInfo(recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 4));
+                        setSelectedServerInfo(recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 5));
 
-                        String ip = (String) recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 3);
+                        String ip = (String) recentServersTable.getValueAt(recentServersTable.getSelectedRow(), 4);
                         playersLabel.setText(Parser.serverInfo.get(ip));
                     }
                 }
@@ -584,18 +597,20 @@ class GUI {
         private Object[][] serversArray;
         private final int listLen;
 
-        private final String[] columnNames = {"Server Name",
-                "Players",
-                "Localization",
-                "IP Address",
-                "Map"};
+        private final String[] columnNames = {
+            "Game",
+            "Server Name",
+            "Players",
+            "Localization",
+            "IP Address",
+            "Map"};
 
         CustomTableModel(Object[][] serversArray, int size) {
             this.listLen = size;
-            this.serversArray = new Object[serversArray.length][5];
+            this.serversArray = new Object[serversArray.length][6];
 
             for(int i = 0; i < serversArray.length; i++) {
-                System.arraycopy(serversArray[i], 0, this.serversArray[i], 0, 5);
+                System.arraycopy(serversArray[i], 0, this.serversArray[i], 0, 6);
             }
         }
 
@@ -616,7 +631,7 @@ class GUI {
 
         @Override
         public int getColumnCount() {
-            return 5;
+            return 6;
         }
 
         @Override
