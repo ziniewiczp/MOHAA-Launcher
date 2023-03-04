@@ -32,12 +32,6 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 class GUI {
 
-    public static String getCurrentlySelectedGame() {
-        return (MainFrame.gameFilter == null)
-            ? "Medal of Honor: Allied Assault"
-            : MainFrame.gameFilter.getSelectedItem().toString();
-    }
-
     static void createAndShowGUI() {
         FlatDarculaLaf.setup();
 
@@ -204,10 +198,17 @@ class GUI {
                     if (SwingUtilities.isLeftMouseButton(me) && me.getClickCount() == 2) {
                         JTable table = (JTable) me.getSource();
 
-                        String ip = table.getModel().getValueAt(table.getSelectedRow(), 3).toString();
+                        // All of JTables row based methods are in terms of the RowSorter, which is not necessarily
+                        // the same as that of the underlying TableModel. For example, the selection is always in terms
+                        // of JTable so that when using RowSorter you will need to convert using convertRowIndexToView
+                        // or convertRowIndexToModel.
+                        int selectedRow = table.convertRowIndexToModel(table.getSelectedRow());
+
+                        String ip = table.getModel().getValueAt(selectedRow, 4).toString();
+                        String game = table.getModel().getValueAt(selectedRow, 0).toString();
 
                         Parser.updateRecentServersList(ip);
-                        Launcher.playMultiplayer(ip);
+                        Launcher.playMultiplayer(ip, game);
                     }
                 }
             };
@@ -250,7 +251,13 @@ class GUI {
                     JPopupMenu popup = (JPopupMenu) c.getParent();
                     JTable table = (JTable) popup.getInvoker();
 
-                    String selectedRowIp = table.getModel().getValueAt(table.getSelectedRow(), 3).toString();
+                    // All of JTables row based methods are in terms of the RowSorter, which is not necessarily
+                    // the same as that of the underlying TableModel. For example, the selection is always in terms
+                    // of JTable so that when using RowSorter you will need to convert using convertRowIndexToView
+                    // or convertRowIndexToModel.
+                    int selectedRow = table.convertRowIndexToModel(table.getSelectedRow());
+
+                    String selectedRowIp = table.getModel().getValueAt(selectedRow, 4).toString();
 
                     StringSelection stringSelection = new StringSelection(selectedRowIp);
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -429,23 +436,6 @@ class GUI {
             textPanel.add(filterText);
             filtersPanel.add(textPanel);
 
-            String[] availableGames = {
-                    "Medal of Honor: Allied Assault",
-                    "Medal of Honor: Allied Assault Spearhead",
-                    "Medal of Honor: Allied Assault Breakthrough"
-            };
-
-            gameFilter = new JComboBox(availableGames);
-            JLabel gameFilterLabel = new JLabel("Game version:");
-            gameFilterLabel.setLabelFor(gameFilter);
-            filtersPanel.add(gameFilterLabel);
-            filtersPanel.add(gameFilter);
-
-            gameFilter.addActionListener((new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) { refresh(); }
-            }));
-
             bottomPanel.add(filtersPanel, BorderLayout.WEST);
 
             JButton launchGameButton = new JButton("Launch game");
@@ -478,11 +468,15 @@ class GUI {
                     // checking if some row on current tab is selected
                     if(onlineServerSelected || recentServerSelected) {
                        String ip = (MainFrame.currentTab == 0)
-                           ? Parser.serversArray[onlineServersTable.getSelectedRow()][3]
-                           : Parser.recentServersArray[recentServersTable.getSelectedRow()][3];
+                           ? Parser.serversArray[onlineServersTable.getSelectedRow()][4]
+                           : Parser.recentServersArray[recentServersTable.getSelectedRow()][4];
 
-                        Parser.updateRecentServersList(ip);
-                        Launcher.playMultiplayer(ip);
+                       String game = (MainFrame.currentTab == 0)
+                           ? Parser.serversArray[onlineServersTable.getSelectedRow()][0]
+                           : Parser.recentServersArray[recentServersTable.getSelectedRow()][0];
+
+                       Parser.updateRecentServersList(ip);
+                       Launcher.playMultiplayer(ip, game);
                     }
                 }
             } );

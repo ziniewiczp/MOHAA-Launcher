@@ -41,11 +41,6 @@ class Parser {
             Arrays.fill(row, "");
         }
 
-        HashMap<String, String> gameMapping = new HashMap<>();
-        gameMapping.put("Medal of Honor: Allied Assault", "mohaa");
-        gameMapping.put("Medal of Honor: Allied Assault Spearhead", "sh");
-        gameMapping.put("Medal of Honor: Allied Assault Breakthrough", "bt");
-
         Document document;
 
         try {

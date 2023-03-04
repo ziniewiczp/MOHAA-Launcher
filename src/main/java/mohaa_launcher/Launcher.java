@@ -9,23 +9,23 @@ class Launcher {
     private static final HashMap<String, String> gameMapping = new HashMap<>();
 
     static {
-        gameMapping.put("Medal of Honor: Allied Assault", "\\MOHAA.exe");
-        gameMapping.put("Medal of Honor: Allied Assault Spearhead", "\\moh_spearhead.exe");
-        gameMapping.put("Medal of Honor: Allied Assault Breakthrough", "\\moh_breakthrough");
+        gameMapping.put("AA", "\\MOHAA.exe");
+        gameMapping.put("SH", "\\moh_spearhead.exe");
+        gameMapping.put("BT", "\\moh_breakthrough");
     }
 
-    static void playMultiplayer(String ip) {
-        launchGame(" set cl_playintro 0 +connect " + ip);
+    static void playMultiplayer(String ip, String game) {
+        launchGame(" set cl_playintro 0 +connect " + ip, game);
     }
 
     static void playSingleplayer() {
-        launchGame(" +set cl_playintro 0");
+        launchGame(" +set cl_playintro 0", "AA");
     }
 
-    private static void launchGame(String parameters) {
+    private static void launchGame(String parameters, String game) {
         try {
             Runtime.getRuntime().exec(Parser.path
-                + gameMapping.get(GUI.getCurrentlySelectedGame())
+                + gameMapping.get(game)
                 + parameters,
                 null,
                 new File(Parser.path));
