@@ -27,15 +27,10 @@ class Parser {
     }
     
     static void parseOnlineServers() {
-        boolean recentServersFound;
 
-        if( recentServersList.size() > 0 ) {
-            recentServersFound = true;
-            recentServersArray = new String[recentServersList.size()][COLUMNS];
-        } else {
-            recentServersFound = false;
-            recentServersArray = new String[1][COLUMNS];
-        }
+        recentServersArray = (recentServersList.size() > 0)
+            ? new String[recentServersList.size()][COLUMNS]
+            : new String[1][COLUMNS];
 
         for(String[] row : recentServersArray) {
             Arrays.fill(row, "");
@@ -78,10 +73,8 @@ class Parser {
 
                 populateRow(serversArray, currentRow, td);
 
-                if (recentServersFound && recentServersList.contains(td.get(6).text())) {
-                    int currentServerNumber = recentServersList.indexOf(td.get(6).text());
-
-                    populateRow(recentServersArray, currentServerNumber, td);
+                if (recentServersList.contains(td.get(4).text())) {
+                    populateRow(recentServersArray, recentServersList.indexOf(td.get(4).text()), td);
                 }
 
                 currentRow++;
