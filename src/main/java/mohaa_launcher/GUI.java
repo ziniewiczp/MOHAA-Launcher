@@ -45,7 +45,7 @@ class GUI {
             throw new RuntimeException(e);
         }
 
-        ImageIcon icon = new ImageIcon("src\\main\\resources\\images\\icon.ico");
+        ImageIcon icon = new ImageIcon("src\\main\\resources\\images\\mohaa.png");
         frame.setIconImage(icon.getImage());
 
         //Add content to the window.
