@@ -1,12 +1,22 @@
 plugins {
     id 'java'
+    id 'edu.sc.seis.launch4j' version '2.5.4'
 }
-
-group 'mohaa-launcher'
-version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'mohaa_launcher.Main'
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
@@ -22,4 +32,12 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+launch4j {
+    headerType = 'gui'
+    mainClassName = 'mohaa_launcher.Main'
+    outfile = 'MOHAA-Launcher.exe'
+    icon = "${projectDir}/src/main/resources/images/icon.ico"
+    jar = "${projectDir}/build/libs/MOHAA-Launcher.jar"
 }
