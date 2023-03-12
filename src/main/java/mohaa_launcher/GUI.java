@@ -63,7 +63,6 @@ class GUI {
         private static int currentTab = 0;
         private final JTable onlineServersTable;
         private final JTable recentServersTable;
-        private static JComboBox gameFilter;
         private final TableRowSorter<CustomTableModel> onlineSorter;
         private final TableRowSorter<CustomTableModel> recentSorter;
         private final JTextField filterText;
@@ -438,19 +437,16 @@ class GUI {
 
             bottomPanel.add(filtersPanel, BorderLayout.WEST);
 
+            JButton settingsButton = new JButton("Settings");
+            settingsButton.addActionListener((e -> createSettingsFrame()));
+
             JButton refreshButton = new JButton("Refresh");
+            refreshButton.addActionListener(e -> refresh());
+
+            JButton launchVoluteButton = new JButton("Launch Volute");
+            launchVoluteButton.addActionListener(e -> Launcher.launchVolute());
 
             JButton connectButton = new JButton("Connect");
-
-            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by www.mohaaservers.tk</center></html>", SwingConstants.CENTER);
-            copyright.setFont(copyright.getFont().deriveFont(10f));
-
-            // listener used to refresh current table
-            refreshButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) { refresh(); }
-            });
-
-            // listener used to connect to selected server
             connectButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     boolean onlineServerSelected = (onlineServersTable.getSelectedRow() != -1 && MainFrame.currentTab == 0);
@@ -458,29 +454,43 @@ class GUI {
 
                     // checking if some row on current tab is selected
                     if(onlineServerSelected || recentServerSelected) {
-                       String ip = (MainFrame.currentTab == 0)
-                           ? Parser.serversArray[onlineServersTable.getSelectedRow()][4]
-                           : Parser.recentServersArray[recentServersTable.getSelectedRow()][4];
+                        String ip = (MainFrame.currentTab == 0)
+                                ? Parser.serversArray[onlineServersTable.getSelectedRow()][4]
+                                : Parser.recentServersArray[recentServersTable.getSelectedRow()][4];
 
-                       String game = (MainFrame.currentTab == 0)
-                           ? Parser.serversArray[onlineServersTable.getSelectedRow()][0]
-                           : Parser.recentServersArray[recentServersTable.getSelectedRow()][0];
+                        String game = (MainFrame.currentTab == 0)
+                                ? Parser.serversArray[onlineServersTable.getSelectedRow()][0]
+                                : Parser.recentServersArray[recentServersTable.getSelectedRow()][0];
 
-                       Parser.updateRecentServersList(ip);
-                       Launcher.playMultiplayer(ip, game);
+                        Parser.updateRecentServersList(ip);
+                        Launcher.playMultiplayer(ip, game);
                     }
                 }
             } );
 
+            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by www.mohaaservers.tk</center></html>", SwingConstants.CENTER);
+            copyright.setFont(copyright.getFont().deriveFont(10f));
+
             // additional panel, used to align both buttons to the EAST
             JPanel buttonPanel = new JPanel();
+            buttonPanel.add(settingsButton);
             buttonPanel.add(refreshButton);
+            buttonPanel.add(launchVoluteButton);
             buttonPanel.add(connectButton);
 
             bottomPanel.add(buttonPanel, BorderLayout.EAST);
             bottomPanel.add(copyright, BorderLayout.AFTER_LAST_LINE);
 
             add(bottomPanel, gbc);
+        }
+
+        private static void createSettingsFrame() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    new SettingsFrame();
+                }
+            });
         }
 
         // function used to filter list based on text entered in search box

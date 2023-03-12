@@ -10,8 +10,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.swing.*;
+
 class Parser {
-    static String path;
     static String[][] serversArray;
     static String[][] recentServersArray;
     static List<String> recentServersList;
@@ -23,11 +24,9 @@ class Parser {
 
     static void initParser() {
         recentServersList = FilesManager.createRecentServersListFromFile();
-        path = FilesManager.getPathFromConfigFile();
     }
     
     static void parseOnlineServers() {
-
         recentServersArray = (recentServersList.size() > 0)
             ? new String[recentServersList.size()][COLUMNS]
             : new String[1][COLUMNS];
@@ -52,7 +51,11 @@ class Parser {
                 Arrays.fill(row, "");
             }
 
-            NotificationManager.displayMessageDialog("Server responded with " + ex.getMessage());
+            JOptionPane.showMessageDialog(
+                new JFrame(),
+                "Server responded with " + ex.getMessage(),
+                "Connection error",
+                JOptionPane.ERROR_MESSAGE);
 
             return;
         }

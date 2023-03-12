@@ -1,5 +1,5 @@
 .gradle/*
 .idea/*
 build/*
-src/main/resources/config.txt
+src/main/resources/config.cfg
 src/main/resources/recentServers.txt

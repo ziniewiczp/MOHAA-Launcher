@@ -1,22 +1,18 @@
 package mohaa_launcher;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 class FileChoosingManager {
 
-    static boolean chooseGameDirectory() {
+    static String chooseFile() {
         JFileChooser fileChooser = new JFileChooser();
-
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Executables (*.exe)", "exe");
+        fileChooser.setFileFilter(filter);
         int returnValue = fileChooser.showOpenDialog(new JFrame());
 
-        if(returnValue == JFileChooser.APPROVE_OPTION) {
-            Parser.path = fileChooser.getSelectedFile().getAbsolutePath();
-            FilesManager.initConfigFileWithPath(Parser.path);
-
-            return true;
-        }
-
-        return false;
+        return (returnValue == JFileChooser.APPROVE_OPTION)
+            ? fileChooser.getSelectedFile().getAbsolutePath()
+            : null;
     }
 }

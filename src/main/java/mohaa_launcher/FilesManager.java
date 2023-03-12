@@ -6,28 +6,6 @@ import java.util.*;
 
 class FilesManager {
 
-    static void initConfigFileWithPath(String path) {
-        try(PrintWriter writer = new PrintWriter("src\\main\\resources\\config.txt", "UTF-8")) {
-            writer.println(path);
-
-        } catch (UnsupportedEncodingException | FileNotFoundException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    static String getPathFromConfigFile() {
-       try(Scanner scanner = new Scanner(Paths.get("src\\main\\resources\\config.txt"))) {
-           String path = scanner.nextLine();
-
-           return (path.equals(""))
-               ? null
-               : path;
-
-       } catch (IOException ex) {
-           return null;
-       }
-    }
-
     static void updateRecentServersFile(List<String> recentServersList) {
         try (PrintWriter writer = new PrintWriter("src\\main\\resources\\recentServers.txt", "UTF-8")) {
             for(String item : recentServersList) {

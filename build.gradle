@@ -26,6 +26,9 @@ dependencies {
     // FlatLaf modern Look and Feel for Java Swing @ https://www.formdev.com/flatlaf/
     implementation 'com.formdev:flatlaf:3.0'
 
+    // Jackson -- Java JSON library @ https://github.com/FasterXML/jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
