@@ -17,16 +17,16 @@ class Launcher {
     }
 
     static void playMultiplayer(String ip, String game) {
-        launch(gameMapping.get(game) + " set cl_playintro 0 +connect " + ip);
+        launch(gameMapping.get(game), " set cl_playintro 0 +connect " + ip);
     }
 
-    static void launchVolute() { launch(SettingsController.getVolutePath()); }
+    static void launchVolute() { launch(SettingsController.getVolutePath(), ""); }
 
-    static void launch(String path) {
+    static void launch(String path, String parameters) {
         try {
             String directory = Paths.get(path).getParent().toString();
 
-            Runtime.getRuntime().exec(path, null, new File(directory));
+            Runtime.getRuntime().exec(path + parameters, null, new File(directory));
 
         } catch(IOException e) {
             e.printStackTrace();
