@@ -499,7 +499,7 @@ class GUI {
 
             //If current expression doesn't parse, don't update.
             try {
-                rf = RowFilter.regexFilter("(?i)" + filterText.getText(), 0);
+                rf = RowFilter.regexFilter("(?i)" + filterText.getText());
 
             } catch (java.util.regex.PatternSyntaxException e) {
                 return;
