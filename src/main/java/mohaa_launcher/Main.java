@@ -1,6 +1,7 @@
 package mohaa_launcher;
 
 import javax.swing.*;
+import java.util.List;
 
 public class Main {
 
@@ -10,7 +11,15 @@ public class Main {
             public void run() {
                 SettingsController.initialize();
                 Parser.initParser();
-                Parser.parseOnlineServers();
+                try {
+                    Parser.MohaaResponse mohaaResponse = Parser.fetchServers("mohaa");
+                    Parser.MohaaResponse mohaasResponse = Parser.fetchServers("mohaas");
+                    Parser.buildServersArrays(List.of(mohaaResponse, mohaasResponse));
+
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+
                 GUI.createAndShowGUI();
             }
         });

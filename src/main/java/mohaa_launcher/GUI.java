@@ -15,8 +15,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -362,10 +365,42 @@ class GUI {
                 @Override
                 public void valueChanged(ListSelectionEvent event) {
                     if (onlineServersTable.getSelectedRow() > -1) {
-                        setSelectedServerInfo(onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 5));
+                        loadingPanel.setVisible(true);
 
+                        String gameRaw = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 0);
+                        String game = gameRaw == "AA" ? "mohaa" : "mohaas";
                         String ip = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4);
-                        playersLabel.setText(Parser.serverInfo.get(ip));
+
+                        HashMap<String, String> serverDetails = new HashMap<String, String>();
+
+                        try {
+                            serverDetails = Parser.getServerDetails(game, ip);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        playersLabel.setText(serverDetails.get("players"));
+
+                        URL url;
+
+                        try {
+                            url = new URL("https://master.333networks.com" + serverDetails.get("mapImage"));
+                        } catch (MalformedURLException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        try {
+                            img = ImageIO.read(url);
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            img = new BufferedImage(200, 148, TYPE_INT_ARGB);
+                        }
+
+                        imageLabel.setIcon(new ImageIcon(img));
+
+                        imageLabel.setText("<html><b>" + serverDetails.get("mapName") + "</b></html>");
+                        loadingPanel.setVisible(false);
                     }
                 }
             });
@@ -468,7 +503,7 @@ class GUI {
                 }
             } );
 
-            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2023 by Nevi<br/>Powered by www.mohaaservers.tk</center></html>", SwingConstants.CENTER);
+            JLabel copyright = new JLabel("<html><center>Copyright &copy; 2016-2026 by Nevi<br/>Powered by www.333networks.com</center></html>", SwingConstants.CENTER);
             copyright.setFont(copyright.getFont().deriveFont(10f));
 
             // additional panel, used to align both buttons to the EAST
@@ -614,7 +649,15 @@ class GUI {
 
         void refresh(int whichTable) {
             try {
-                Parser.parseOnlineServers();
+                try {
+                    Parser.MohaaResponse mohaaResponse = Parser.fetchServers("mohaa");
+                    Parser.MohaaResponse mohaasResponse = Parser.fetchServers("mohaas");
+                    Parser.buildServersArrays(List.of(mohaaResponse, mohaasResponse));
+
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+
                 this.serversArray = (whichTable == 0) ? Parser.serversArray : Parser.recentServersArray;
                 fireTableDataChanged();
 

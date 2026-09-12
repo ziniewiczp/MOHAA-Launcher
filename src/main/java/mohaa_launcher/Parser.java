@@ -1,14 +1,17 @@
 package mohaa_launcher;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
 
@@ -22,83 +25,188 @@ class Parser {
 
     private static final int COLUMNS = 6;
 
+    public record MohaaResponse(
+            List<MohaaServer> servers,
+            Stats stats
+    ) {}
+
+    public record Stats(
+            int total,
+            int players
+    ) {}
+
+    public record MohaaServer(
+            int id,
+            String label,
+            String gametype,
+            String ip,
+            String gamename,
+            long dt_updated,
+            long dt_added,
+            int maxplayers,
+            String mapname,
+            int queryport,
+            String country,
+            int numplayers,
+            String hostname,
+            int hostport,
+            String maptitle
+    ) {}
+
     static void initParser() {
         recentServersList = FilesManager.createRecentServersListFromFile();
-    }
-    
-    static void parseOnlineServers() {
+
+        serversArray = new String[1][COLUMNS];
+        for(String[] row : serversArray) {
+            Arrays.fill(row, "");
+        }
+
         recentServersArray = (recentServersList.size() > 0)
-            ? new String[recentServersList.size()][COLUMNS]
-            : new String[1][COLUMNS];
+                ? new String[recentServersList.size()][COLUMNS]
+                : new String[1][COLUMNS];
 
         for(String[] row : recentServersArray) {
             Arrays.fill(row, "");
         }
+    }
 
-        Document document;
+    static MohaaResponse fetchServers(String game) throws IOException {
+        var uri = URI.create("https://master.333networks.com/json/" + game);
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest
+                .newBuilder()
+                .uri(uri)
+                .header("accept", "application/json")
+                .GET()
+                .build();
 
+        HttpResponse<String> response = null;
         try {
-            // creating JSoup document
-             document = Jsoup.connect("https://www.mohaaservers.tk/")
-                .userAgent(USER_AGENT)
-                .get();
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        } catch (IOException ex) {
-            ex.printStackTrace();
-
-            serversArray = new String[1][COLUMNS];
-            for(String[] row : serversArray) {
-                Arrays.fill(row, "");
-            }
-
+        } catch (IOException | InterruptedException e) {
             JOptionPane.showMessageDialog(
-                new JFrame(),
-                "Server responded with " + ex.getMessage(),
-                "Connection error",
-                JOptionPane.ERROR_MESSAGE);
+                    new JFrame(),
+                    "Server responded with " + e.getMessage(),
+                    "Connection error",
+                    JOptionPane.ERROR_MESSAGE);
 
-            return;
+            throw new RuntimeException(e);
         }
 
-        serversArray = new String[countOnlineServers(document)][COLUMNS];
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        int currentRow = 0;
+        JsonNode root = null;
+        try {
+            root = objectMapper.readTree(response.body());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        for (Element table : document.select("table[class=sortresults]")) {
-            for (Element row : table.select("tr")) {
+        if (!root.isArray() || root.size() != 2) {
+            throw new IOException("Unexpected API response format");
+        }
 
-                Elements td = row.select("td");
+        List<MohaaServer> servers = objectMapper.convertValue(
+                root.get(0),
+                new TypeReference<List<MohaaServer>>() {}
+        );
 
-                // ignore headers and offline servers
-                if (td.size() == 0 || td.get(0).text().contains("Offline")) {
-                    continue;
+        Stats stats = objectMapper.treeToValue(
+                root.get(1),
+                Stats.class
+        );
+
+        return new MohaaResponse(servers, stats);
+    }
+
+    static void buildServersArrays(List<MohaaResponse> responses) throws IOException {
+
+        Integer totalServersCount = 0;
+
+        for(MohaaResponse response : responses) {
+            totalServersCount += response.servers().size();
+        }
+
+        serversArray = new String[totalServersCount][COLUMNS];
+
+        Integer currentRow = 0;
+
+        for(MohaaResponse response : responses) {
+            for (MohaaServer server : response.servers()) {
+
+                String game = "mohaa".equals(server.gamename()) ? "AA" : "SH";
+
+                serversArray[currentRow][0] = game;
+                serversArray[currentRow][1] = server.hostname();
+                serversArray[currentRow][2] = server.numplayers() + "/" + server.maxplayers();
+                serversArray[currentRow][3] = server.country();
+                serversArray[currentRow][4] = server.ip() + ":" + server.hostport();
+                serversArray[currentRow][5] = server.mapname();
+
+                if (recentServersList.contains(server.ip())) {
+                    recentServersArray[recentServersList.indexOf(server.ip())][0] = game;
+                    recentServersArray[recentServersList.indexOf(server.ip())][1] = server.hostname();
+                    recentServersArray[recentServersList.indexOf(server.ip())][2] = String.valueOf(server.numplayers());
+                    recentServersArray[recentServersList.indexOf(server.ip())][3] = server.country();
+                    recentServersArray[recentServersList.indexOf(server.ip())][4] = server.ip();
+                    recentServersArray[recentServersList.indexOf(server.ip())][5] = server.mapname();
                 }
 
-                populateRow(serversArray, currentRow, td);
-
-                if (recentServersList.contains(td.get(4).text())) {
-                    populateRow(recentServersArray, recentServersList.indexOf(td.get(4).text()), td);
-                }
-
-                currentRow++;
+                currentRow += 1;
             }
         }
     }
 
-    private static int countOnlineServers(Document doc) {
-        int counter = 0;
+    static HashMap<String, String> getServerDetails(String game, String ip) throws IOException {
+        var uri = URI.create("https://master.333networks.com/json/" + game + "/" + ip);
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest
+                .newBuilder()
+                .uri(uri)
+                .header("accept", "application/json")
+                .GET()
+                .build();
 
-        for (Element table : doc.select("table[class=sortresults]")) {
-            for (Element row : table.select("tr")) {
-                Elements td = row.select("td");
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                if ((td.size() > 0) && td.get(0).text().contains("Online")) {
-                    counter += 1;
-                }
-            }
+        } catch (IOException | InterruptedException e) {
+            JOptionPane.showMessageDialog(
+                    new JFrame(),
+                    "Server responded with " + e.getMessage(),
+                    "Connection error",
+                    JOptionPane.ERROR_MESSAGE);
+
+            throw new RuntimeException(e);
         }
 
-        return counter;
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        JsonNode root = null;
+        try {
+            root = objectMapper.readTree(response.body());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int playersCount = root.get("numplayers").asInt();
+
+        String serverInfoString = "<html><b>Players online:</b><br/><ol>";
+
+        for(int i = 0; i < playersCount; i += 1) {
+            serverInfoString += "<li>" + root.get("player_" + i).get("name").asText() + "</li>";
+        }
+
+        serverInfoString += "</ol></html>";
+
+        HashMap<String, String> serverDetails = new HashMap<String, String>();
+        serverDetails.put("players", serverInfoString);
+        serverDetails.put("mapImage", root.get("mapurl").asText());
+        serverDetails.put("mapName", root.get("mapname").asText());
+
+        return serverDetails;
     }
 
     static void updateRecentServersList(String givenIP) {
@@ -106,25 +214,5 @@ class Parser {
         recentServersList.add(0, givenIP);
 
         FilesManager.updateRecentServersFile(recentServersList);
-    }
-
-    private static void populateRow(String[][] array, int rowNumber, Elements td) {
-        String game = td.get(1).select("img").get(0).attr("alt");
-        array[rowNumber][0] = game.substring(game.length() - 2); // game
-        array[rowNumber][1] = td.get(3).text();  // server name
-        array[rowNumber][2] = td.get(7).text();  // players count
-        array[rowNumber][3] = (td.get(2).select("img").get(0).attr("alt")).toUpperCase();  // localization
-        array[rowNumber][4] = td.get(4).text();  // IP address
-        array[rowNumber][5] = td.get(6).text();  // map
-
-        String serverInfoString = "<html><b>Players online:</b><br/><ol>";
-
-        for(Element player : td.get(8).select("li")) {
-            serverInfoString += "<li>" + player.text() + "</li>";
-        }
-
-        serverInfoString += "</ol></html>";
-
-        serverInfo.put(array[rowNumber][4], serverInfoString);
     }
 }
