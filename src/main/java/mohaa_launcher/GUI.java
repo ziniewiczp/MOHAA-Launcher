@@ -478,9 +478,6 @@ class GUI {
             JButton refreshButton = new JButton("Refresh");
             refreshButton.addActionListener(e -> refresh());
 
-            JButton launchVoluteButton = new JButton("Launch Volute");
-            launchVoluteButton.addActionListener(e -> Launcher.launchVolute());
-
             JButton connectButton = new JButton("Connect");
             connectButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -510,7 +507,6 @@ class GUI {
             JPanel buttonPanel = new JPanel();
             buttonPanel.add(settingsButton);
             buttonPanel.add(refreshButton);
-            buttonPanel.add(launchVoluteButton);
             buttonPanel.add(connectButton);
 
             bottomPanel.add(buttonPanel, BorderLayout.EAST);

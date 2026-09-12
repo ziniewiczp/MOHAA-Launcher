@@ -23,10 +23,6 @@ class SettingsController {
         return settingsMap.get("mohaabtPath");
     }
 
-    public static String getVolutePath() {
-        return settingsMap.get("volutePath");
-    }
-
     public static void initialize() {
         try {
             byte[] settingsData = Files.readAllBytes(Paths.get(CONFIG_PATH));

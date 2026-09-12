@@ -20,8 +20,6 @@ class Launcher {
         launch(gameMapping.get(game), " set cl_playintro 0 +connect " + ip);
     }
 
-    static void launchVolute() { launch(SettingsController.getVolutePath(), ""); }
-
     static void launch(String path, String parameters) {
         try {
             String directory = Paths.get(path).getParent().toString();

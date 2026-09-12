@@ -9,7 +9,6 @@ class SettingsFrame extends JFrame {
     private JTextField mohaaLocationTextField;
     private JTextField mohaashLocationTextField;
     private JTextField mohaabtLocationTextField;
-    private JTextField voluteLocationTextField;
 
     public SettingsFrame() {
         this.setTitle("Settings");
@@ -91,33 +90,6 @@ class SettingsFrame extends JFrame {
 
         panel.add(locationsPanel);
 
-        JPanel otherSettingsPanel = new JPanel();
-        otherSettingsPanel.setLayout(new BoxLayout(otherSettingsPanel, BoxLayout.PAGE_AXIS));
-        otherSettingsPanel.setBorder(BorderFactory.createTitledBorder("Other settings"));
-
-        JPanel voluteLocationHeadingPanel = new JPanel();
-        voluteLocationHeadingPanel.setLayout(new BorderLayout());
-        voluteLocationHeadingPanel.setBorder( new EmptyBorder(5,5,0,0));
-
-        JLabel voluteLocationHeading = new JLabel("Volute location");
-        voluteLocationHeadingPanel.add(voluteLocationHeading, BorderLayout.LINE_START);
-        otherSettingsPanel.add(voluteLocationHeadingPanel);
-
-        JPanel voluteLocationPanel = new JPanel();
-        voluteLocationPanel.setLayout(new FlowLayout());
-
-        voluteLocationTextField = new JTextField(25);
-        voluteLocationTextField.setText(SettingsController.getVolutePath());
-        voluteLocationPanel.add(voluteLocationTextField);
-
-        JButton voluteLocationButton = new JButton("Browse");
-        voluteLocationButton.addActionListener(e -> browse(voluteLocationTextField));
-        voluteLocationPanel.add(voluteLocationButton);
-
-        otherSettingsPanel.add(voluteLocationPanel);
-
-        panel.add(otherSettingsPanel);
-
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 
@@ -149,7 +121,6 @@ class SettingsFrame extends JFrame {
         settings.put("mohaaPath",   mohaaLocationTextField.getText());
         settings.put("mohaashPath", mohaashLocationTextField.getText());
         settings.put("mohaabtPath", mohaabtLocationTextField.getText());
-        settings.put("volutePath",  voluteLocationTextField.getText());
 
         SettingsController.update(settings);
         this.dispose();
