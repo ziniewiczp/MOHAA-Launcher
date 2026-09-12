@@ -1,10 +1,11 @@
 package mohaa_launcher;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ class Parser {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
 
-    private static final int COLUMNS = 6;
+    static final int COLUMNS = 7;
 
     public record MohaaResponse(
             List<MohaaServer> servers,
@@ -120,7 +121,7 @@ class Parser {
         return new MohaaResponse(servers, stats);
     }
 
-    static void buildServersArrays(List<MohaaResponse> responses) throws IOException {
+    static void buildServersArrays(List<MohaaResponse> responses) throws IOException, InterruptedException {
 
         Integer totalServersCount = 0;
 
@@ -139,18 +140,20 @@ class Parser {
 
                 serversArray[currentRow][0] = game;
                 serversArray[currentRow][1] = server.hostname();
-                serversArray[currentRow][2] = server.numplayers() + "/" + server.maxplayers();
-                serversArray[currentRow][3] = server.country();
-                serversArray[currentRow][4] = server.ip() + ":" + server.hostport();
-                serversArray[currentRow][5] = server.mapname();
+                serversArray[currentRow][2] = ping(server.ip(), server.queryport());
+                serversArray[currentRow][3] = server.numplayers() + "/" + server.maxplayers();
+                serversArray[currentRow][4] = server.country();
+                serversArray[currentRow][5] = server.ip() + ":" + server.hostport();
+                serversArray[currentRow][6] = server.mapname();
 
                 if (recentServersList.contains(server.ip())) {
                     recentServersArray[recentServersList.indexOf(server.ip())][0] = game;
                     recentServersArray[recentServersList.indexOf(server.ip())][1] = server.hostname();
-                    recentServersArray[recentServersList.indexOf(server.ip())][2] = String.valueOf(server.numplayers());
-                    recentServersArray[recentServersList.indexOf(server.ip())][3] = server.country();
-                    recentServersArray[recentServersList.indexOf(server.ip())][4] = server.ip();
-                    recentServersArray[recentServersList.indexOf(server.ip())][5] = server.mapname();
+                    recentServersArray[recentServersList.indexOf(server.ip())][2] = ping(server.ip(), server.queryport());
+                    recentServersArray[recentServersList.indexOf(server.ip())][3] = String.valueOf(server.numplayers());
+                    recentServersArray[recentServersList.indexOf(server.ip())][4] = server.country();
+                    recentServersArray[recentServersList.indexOf(server.ip())][5] = server.ip();
+                    recentServersArray[recentServersList.indexOf(server.ip())][6] = server.mapname();
                 }
 
                 currentRow += 1;
@@ -215,4 +218,54 @@ class Parser {
 
         FilesManager.updateRecentServersFile(recentServersList);
     }
+
+    private static String ping(String host, int port) throws IOException {
+
+        InetAddress address = InetAddress.getByName(host);
+
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setSoTimeout(1000);
+
+            byte[] data = createGetInfoPacket();
+
+            DatagramPacket request = new DatagramPacket(
+                data,
+                data.length,
+                address,
+                port
+            );
+
+            byte[] buffer = new byte[8192];
+            DatagramPacket response = new DatagramPacket(buffer, buffer.length);
+            long start = System.nanoTime();
+
+            socket.send(request);
+            socket.receive(response);
+
+            long elapsed = System.nanoTime() - start;
+
+            return String.valueOf(elapsed / 1_000_000);
+
+        } catch (Exception e) {
+            return "?";
+        }
+    }
+
+    private static byte[] createGetInfoPacket() {
+        byte[] command = "getinfo xxx".getBytes(StandardCharsets.US_ASCII);
+
+        byte[] packet = new byte[HEADER.length + command.length];
+
+        System.arraycopy(HEADER, 0, packet, 0, HEADER.length);
+        System.arraycopy(command, 0, packet, HEADER.length, command.length);
+
+        return packet;
+    }
+
+    private static final byte[] HEADER = {
+            (byte) 0xFF,
+            (byte) 0xFF,
+            (byte) 0xFF,
+            (byte) 0xFF
+    };
 }

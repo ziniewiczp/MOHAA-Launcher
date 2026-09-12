@@ -155,19 +155,21 @@ class GUI {
             // setting preferred columns width
             TableColumnModel tableColumnModel = onlineServersTable.getColumnModel();
             tableColumnModel.getColumn(0).setPreferredWidth(40);    // game
-            tableColumnModel.getColumn(1).setPreferredWidth(360);   // server name
-            tableColumnModel.getColumn(2).setPreferredWidth(30);    // players
-            tableColumnModel.getColumn(3).setPreferredWidth(25);    // localization
-            tableColumnModel.getColumn(4).setPreferredWidth(100);   // IP
-            tableColumnModel.getColumn(5).setPreferredWidth(100);   // map
+            tableColumnModel.getColumn(1).setPreferredWidth(330);   // server name
+            tableColumnModel.getColumn(2).setPreferredWidth(30);    // ping
+            tableColumnModel.getColumn(3).setPreferredWidth(30);    // players
+            tableColumnModel.getColumn(4).setPreferredWidth(25);    // localization
+            tableColumnModel.getColumn(5).setPreferredWidth(100);   // IP
+            tableColumnModel.getColumn(6).setPreferredWidth(100);   // map
 
             tableColumnModel = recentServersTable.getColumnModel();
             tableColumnModel.getColumn(0).setPreferredWidth(40);    // game
-            tableColumnModel.getColumn(1).setPreferredWidth(360);   // server name
-            tableColumnModel.getColumn(2).setPreferredWidth(30);    // players
-            tableColumnModel.getColumn(3).setPreferredWidth(25);    // localization
-            tableColumnModel.getColumn(4).setPreferredWidth(100);   // IP
-            tableColumnModel.getColumn(5).setPreferredWidth(100);   // map
+            tableColumnModel.getColumn(1).setPreferredWidth(330);   // server name
+            tableColumnModel.getColumn(2).setPreferredWidth(30);    // ping
+            tableColumnModel.getColumn(3).setPreferredWidth(30);    // players
+            tableColumnModel.getColumn(4).setPreferredWidth(25);    // localization
+            tableColumnModel.getColumn(5).setPreferredWidth(100);   // IP
+            tableColumnModel.getColumn(6).setPreferredWidth(100);   // map
 
             // centering content of Game, Players and Localization columns
             DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -175,10 +177,12 @@ class GUI {
             onlineServersTable.getColumnModel().getColumn(0).setCellRenderer( centerRenderer );
             onlineServersTable.getColumnModel().getColumn(2).setCellRenderer( centerRenderer );
             onlineServersTable.getColumnModel().getColumn(3).setCellRenderer( centerRenderer );
+            onlineServersTable.getColumnModel().getColumn(4).setCellRenderer( centerRenderer );
 
             recentServersTable.getColumnModel().getColumn(0).setCellRenderer( centerRenderer );
             recentServersTable.getColumnModel().getColumn(2).setCellRenderer( centerRenderer );
             recentServersTable.getColumnModel().getColumn(3).setCellRenderer( centerRenderer );
+            recentServersTable.getColumnModel().getColumn(4).setCellRenderer( centerRenderer );
 
             // centering content of Game, Players and Localization columns
             DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
@@ -259,7 +263,7 @@ class GUI {
                     // or convertRowIndexToModel.
                     int selectedRow = table.convertRowIndexToModel(table.getSelectedRow());
 
-                    String selectedRowIp = table.getModel().getValueAt(selectedRow, 4).toString();
+                    String selectedRowIp = table.getModel().getValueAt(selectedRow, 5).toString();
 
                     StringSelection stringSelection = new StringSelection(selectedRowIp);
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -286,11 +290,11 @@ class GUI {
             recentSorter.setRowFilter(emptyFilter);
             onlineSorter.setRowFilter(emptyFilter);
 
-            onlineSorter.setComparator(2, playersComparator);
-            recentSorter.setComparator(2, playersComparator);
+            onlineSorter.setComparator(3, playersComparator);
+            recentSorter.setComparator(3, playersComparator);
 
-            onlineServersTable.getRowSorter().toggleSortOrder(2);
-            recentServersTable.getRowSorter().toggleSortOrder(2);
+            onlineServersTable.getRowSorter().toggleSortOrder(3);
+            recentServersTable.getRowSorter().toggleSortOrder(3);
 
             //Add the tabbed pane to this panel.
             add(tabbedPane, gbc);
@@ -369,7 +373,7 @@ class GUI {
 
                         String gameRaw = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 0);
                         String game = gameRaw == "AA" ? "mohaa" : "mohaas";
-                        String ip = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 4);
+                        String ip = (String) onlineServersTable.getValueAt(onlineServersTable.getSelectedRow(), 5);
 
                         HashMap<String, String> serverDetails = new HashMap<String, String>();
 
@@ -625,17 +629,19 @@ class GUI {
         private final String[] columnNames = {
             "Game",
             "Server Name",
+            "Ping",
             "Players",
             "Localization",
             "IP Address",
-            "Map"};
+            "Map"
+        };
 
         CustomTableModel(Object[][] serversArray, int size) {
             this.listLen = size;
-            this.serversArray = new Object[serversArray.length][6];
+            this.serversArray = new Object[serversArray.length][Parser.COLUMNS];
 
             for(int i = 0; i < serversArray.length; i++) {
-                System.arraycopy(serversArray[i], 0, this.serversArray[i], 0, 6);
+                System.arraycopy(serversArray[i], 0, this.serversArray[i], 0, Parser.COLUMNS);
             }
         }
 
@@ -664,7 +670,7 @@ class GUI {
 
         @Override
         public int getColumnCount() {
-            return 6;
+            return Parser.COLUMNS;
         }
 
         @Override
